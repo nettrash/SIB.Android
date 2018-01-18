@@ -8,8 +8,7 @@ public class ReferenceType<T> {
 
     public T Value;
 
-    public ReferenceType()
-    {
+    public ReferenceType() {
 
     }
 

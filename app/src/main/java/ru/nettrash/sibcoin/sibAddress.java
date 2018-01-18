@@ -6,7 +6,7 @@ import ru.nettrash.crypto.RIPEMD160;
 import ru.nettrash.crypto.SHA256;
 import ru.nettrash.math.BigInteger;
 
-/**
+/*
  * Created by nettrash on 10.01.2018.
  */
 
@@ -15,25 +15,21 @@ public final class sibAddress {
     private static String Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
     private static int Size = 25;
 
-    private static int[] decodeBase58(String input) throws Exception
-    {
+    private static int[] decodeBase58(String input) throws Exception {
         int[] output = new int[Size];
         Arrays.fill(output, 0);
 
-        for (int i=0; i<input.length(); i++)
-        {
+        for (int i=0; i<input.length(); i++) {
             char t = input.charAt(i);
             int p = Alphabet.indexOf(t);
 
-            if (p < 0)
-            {
+            if (p < 0) {
                 throw new ArrayIndexOutOfBoundsException();
             }
 
             int j = Size;
 
-            while (j > 0)
-            {
+            while (j > 0) {
                 j = j - 1;
                 p = p + 58 * output[j];
 
@@ -42,8 +38,7 @@ public final class sibAddress {
                 p = p / 256;
             }
 
-            if (p != 0)
-            {
+            if (p != 0) {
                 throw new IndexOutOfBoundsException();
             }
         }
@@ -51,8 +46,7 @@ public final class sibAddress {
         return output;
     }
 
-    private static int[] decodeBase58Key(String input) throws Exception
-    {
+    private static int[] decodeBase58Key(String input) throws Exception {
         BigInteger base = new BigInteger(58);
         BigInteger bi = new BigInteger(0);
         int leadingZerosNum = 0;
@@ -64,56 +58,43 @@ public final class sibAddress {
 
             bi = bi.add(new BigInteger(alphaIndex).multiply(base.power(input.length() - 1 - i)));
 
-            if (input.charAt(i) == '1')
-            {
+            if (input.charAt(i) == '1') {
                 leadingZerosNum += 1;
-            }
-            else
-            {
+            } else {
                 leadingZerosNum = 0;
             }
         }
 
-        Integer[] bytes = bi.toByteArrayUnsigned();
-        Integer[] result = new Integer[bytes.length+leadingZerosNum];
+        int[] bytes = bi.toByteArrayUnsigned();
+        int[] result = new int[bytes.length+leadingZerosNum];
         Arrays.fill(result, 0);
         System.arraycopy(bytes, 0, result, leadingZerosNum, bytes.length);
-        int[] retVal = new int[result.length];
-        for (int i=0; i<result.length; i++) retVal[i] = result[i].intValue();
-        return retVal;
+        return result;
     }
 
-    private static String encodeBase58(int[] data) throws Exception
-    {
+    private static String encodeBase58(int[] data) throws Exception {
         BigInteger base = new BigInteger(58);
-        BigInteger bi = new BigInteger(data);
+        BigInteger bi = new BigInteger(ru.nettrash.util.Arrays.toByteArray(data));
         String chars = "";
 
-        while (bi.compareTo(base) >= 0)
-        {
+        while (bi.compareTo(base) >= 0) {
             BigInteger module = bi.mod(base);
-            chars = Alphabet.substring(module.intValue(), 1) + chars;
+            chars = Alphabet.charAt(module.intValue()) + chars;
             bi = bi.subtract(module).divide(base);
         }
-        chars = Alphabet.substring(bi.intValue(), 1) + chars;
-        for (int i=0; i<data.length; i++)
-        {
-            if (data[i] == 0x00)
-            {
+        chars = Alphabet.charAt(bi.intValue()) + chars;
+        for (int i=0; i<data.length; i++) {
+            if (data[i] == 0x00) {
                 chars = Alphabet.substring(0, 1) + chars;
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
         return chars;
     }
 
-    public static boolean verify(String address)
-    {
-        try
-        {
+    public static boolean verify(String address) {
+        try {
             if (address == null) return false;
             if (address.length() < 26 || address.length() > 35) return false;
             if (address.charAt(0) != 'S') return false;
@@ -130,21 +111,17 @@ public final class sibAddress {
             if (decoded[21] != id2[0] ||
                     decoded[22] != id2[1] ||
                     decoded[23] != id2[2] ||
-                    decoded[24] != id2[3])
-            {
+                    decoded[24] != id2[3]) {
                 return false;
             }
 
             return true;
-        }
-		catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return false;
         }
     }
 
-    public static String forKey(int[] key) throws Exception
-    {
+    public static String forKey(int[] key) throws Exception {
         SHA256 sha256 = new SHA256();
         sha256.update(ru.nettrash.util.Arrays.toByteArray(key));
         byte[] keyHash = sha256.digest();
@@ -161,17 +138,15 @@ public final class sibAddress {
         sha256.update(keyHash);
         byte[] hash = sha256.digest();
         hashDataF = Arrays.copyOf(hashDataF, hashDataF.length+4);
-        System.arraycopy(hash, 0, hashDataF, hashDataF.length-5, 4);
+        System.arraycopy(hash, 0, hashDataF, hashDataF.length-4, 4);
         return encodeBase58(ru.nettrash.util.Arrays.toUnsignedByteArray(hashDataF));
     }
 
-    public static String wifFromPrivateKey(int[] key) throws Exception
-    {
+    public static String wifFromPrivateKey(int[] key) throws Exception {
         return wifFromPrivateKey(key, true);
     }
 
-    public static String wifFromPrivateKey(int[] key, boolean compressed) throws Exception
-    {
+    public static String wifFromPrivateKey(int[] key, boolean compressed) throws Exception {
         byte[] d = ru.nettrash.util.Arrays.toByteArray(key);
         if (compressed) {
             d = Arrays.copyOf(d, d.length+1);
@@ -188,48 +163,39 @@ public final class sibAddress {
         sha256.update(d);
         int[] hash = ru.nettrash.util.Arrays.toUnsignedByteArray(sha256.digest());
         retVal = Arrays.copyOf(retVal, retVal.length+4);
-        System.arraycopy(hash, 0, retVal, retVal.length-5, 4);
+        System.arraycopy(hash, 0, retVal, retVal.length-4, 4);
         return encodeBase58(retVal);
     }
 
-    static int[] spendToScript(String address) throws Exception
-    {
+    static int[] spendToScript(String address) throws Exception {
         int[] addrBytes = decodeBase58(address);
         int[] retVal = new int[0];
-        ru.nettrash.util.Arrays.append(retVal, 118); //OP_DUP
-        ru.nettrash.util.Arrays.append(retVal, 169); //HASH_160
+        retVal = ru.nettrash.util.Arrays.append(retVal, 118); //OP_DUP
+        retVal = ru.nettrash.util.Arrays.append(retVal, 169); //HASH_160
         int cnt = addrBytes.length - 5;
         if (cnt < 76) {
-            ru.nettrash.util.Arrays.append(retVal, cnt);
-        }
-        else
-        {
-            if (cnt < 0xff)
-            {
-                ru.nettrash.util.Arrays.append(retVal, 76);
-                ru.nettrash.util.Arrays.append(retVal, cnt);
-            }
-            else
-            {
-                if (cnt < 0xffff)
-                {
-                    ru.nettrash.util.Arrays.append(retVal, 77);
-                    ru.nettrash.util.Arrays.append(retVal, cnt & 0xff);
-                    ru.nettrash.util.Arrays.append(retVal, (cnt >> 8) & 0xff);
-                }
-                else
-                {
-                    ru.nettrash.util.Arrays.append(retVal, 78);
-                    ru.nettrash.util.Arrays.append(retVal, cnt & 0xff);
-                    ru.nettrash.util.Arrays.append(retVal, (cnt >> 8) & 0xff);
-                    ru.nettrash.util.Arrays.append(retVal, (cnt >> 16) & 0xff);
-                    ru.nettrash.util.Arrays.append(retVal, (cnt >> 24) & 0xff);
+            retVal = ru.nettrash.util.Arrays.append(retVal, cnt);
+        } else {
+            if (cnt < 0xff) {
+                retVal = ru.nettrash.util.Arrays.append(retVal, 76);
+                retVal = ru.nettrash.util.Arrays.append(retVal, cnt);
+            } else {
+                if (cnt < 0xffff) {
+                    retVal = ru.nettrash.util.Arrays.append(retVal, 77);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, cnt & 0xff);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, (cnt >> 8) & 0xff);
+                } else {
+                    retVal = ru.nettrash.util.Arrays.append(retVal, 78);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, cnt & 0xff);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, (cnt >> 8) & 0xff);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, (cnt >> 16) & 0xff);
+                    retVal = ru.nettrash.util.Arrays.append(retVal, (cnt >> 24) & 0xff);
                 }
             }
         }
-        ru.nettrash.util.Arrays.append(retVal, addrBytes, 1, addrBytes.length-4);
-        ru.nettrash.util.Arrays.append(retVal, 136); //OP_EQUALVERIFY
-        ru.nettrash.util.Arrays.append(retVal, 172); //OP_CHECKSIG
+        retVal = ru.nettrash.util.Arrays.append(retVal, addrBytes, 1, addrBytes.length-4);
+        retVal = ru.nettrash.util.Arrays.append(retVal, 136); //OP_EQUALVERIFY
+        retVal = ru.nettrash.util.Arrays.append(retVal, 172); //OP_CHECKSIG
 
         return retVal;
     }
