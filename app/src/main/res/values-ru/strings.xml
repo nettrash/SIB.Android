@@ -1,0 +1,5 @@
+<resources>
+    <string name="applicationName">Червонец</string>
+    <string name="titleActivityRoot">Червонец</string>
+    <string name="textLoading">Инициализация...</string>
+</resources>
