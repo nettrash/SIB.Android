@@ -8,7 +8,7 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class RootActivity extends BaseActivity {
+public class RootActivity extends Activity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -45,7 +45,6 @@ public class RootActivity extends BaseActivity {
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     };
-    private View mControlsView;
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
         public void run() {
@@ -54,7 +53,6 @@ public class RootActivity extends BaseActivity {
             if (actionBar != null) {
                 actionBar.show();
             }
-            mControlsView.setVisibility(View.VISIBLE);
         }
     };
     private boolean mVisible;
@@ -86,7 +84,6 @@ public class RootActivity extends BaseActivity {
         setContentView(R.layout.activity_root);
 
         mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
 
 
@@ -97,11 +94,6 @@ public class RootActivity extends BaseActivity {
                 toggle();
             }
         });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
     }
 
     @Override
@@ -128,7 +120,6 @@ public class RootActivity extends BaseActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
         mVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay
