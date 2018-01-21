@@ -1,5 +1,10 @@
 <resources>
     <string name="applicationName">SIBCoin</string>
+
     <string name="titleActivityRoot">SIBCoin</string>
+    <string name="titleActivityInitialize">SIBCoin</string>
+
     <string name="textLoading">Loading...</string>
+
+    <string name="createWallet">Create wallet</string>
 </resources>

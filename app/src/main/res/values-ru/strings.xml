@@ -1,5 +1,10 @@
 <resources>
     <string name="applicationName">Червонец</string>
+
     <string name="titleActivityRoot">Червонец</string>
+    <string name="titleActivityInitialize">Червонец</string>
+
     <string name="textLoading">Инициализация...</string>
+
+    <string name="createWallet">Создание кошелька</string>
 </resources>

@@ -23,7 +23,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".InitializeActivity"></activity>
+        <activity
+            android:name=".InitializeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/titleActivityInitialize"
+            android:theme="@style/FullscreenTheme">
+
+        </activity>
     </application>
 
 </manifest>

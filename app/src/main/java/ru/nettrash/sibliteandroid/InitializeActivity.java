@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
+
+import java.util.UUID;
 
 public class InitializeActivity extends BaseActivity {
 
@@ -29,6 +32,8 @@ public class InitializeActivity extends BaseActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
+    private EditText mFirstKeyValueEditor;
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -46,6 +51,7 @@ public class InitializeActivity extends BaseActivity {
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     };
+
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
         public void run() {
@@ -56,7 +62,9 @@ public class InitializeActivity extends BaseActivity {
             }
         }
     };
+
     private boolean mVisible;
+
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
@@ -86,7 +94,7 @@ public class InitializeActivity extends BaseActivity {
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
-
+        mFirstKeyValueEditor = findViewById(R.id.first_key_value_editor);
 
         // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
@@ -96,6 +104,7 @@ public class InitializeActivity extends BaseActivity {
             }
         });
     }
+
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -104,6 +113,8 @@ public class InitializeActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
+
+        mFirstKeyValueEditor.setText(UUID.randomUUID().toString());
     }
 
     private void toggle() {

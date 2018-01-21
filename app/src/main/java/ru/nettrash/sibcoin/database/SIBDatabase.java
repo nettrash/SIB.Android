@@ -21,6 +21,7 @@ public abstract class SIBDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE =
                     Room.databaseBuilder(context, SIBDatabase.class, "sib-database")
+                            .allowMainThreadQueries()
                             .build();
         }
         return INSTANCE;
