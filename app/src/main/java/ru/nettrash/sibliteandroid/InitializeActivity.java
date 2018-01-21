@@ -3,13 +3,13 @@ package ru.nettrash.sibliteandroid;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class RootActivity extends BaseActivity {
+public class InitializeActivity extends BaseActivity {
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -63,6 +63,7 @@ public class RootActivity extends BaseActivity {
             hide();
         }
     };
+
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -81,8 +82,7 @@ public class RootActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_root);
+        setContentView(R.layout.activity_initialize);
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
@@ -96,7 +96,6 @@ public class RootActivity extends BaseActivity {
             }
         });
     }
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -105,23 +104,6 @@ public class RootActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
-
-        sibApplication.initialize();
-
-
-        if (sibApplication.model.firstRun()) {
-            //create first address
-            Intent intent = new Intent(this, InitializeActivity.class);
-            startActivity(intent);
-        } else {
-            //change context to balance
-
-/*Intent intent = new Intent(this,MyActivity.class);
-intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-startActivity(intent);
-this.finish();*/
-        }
-
     }
 
     private void toggle() {

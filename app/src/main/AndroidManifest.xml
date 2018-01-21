@@ -3,6 +3,7 @@
     package="ru.nettrash.sibliteandroid">
 
     <application
+        android:name=".SIBApplication"
         android:allowBackup="true"
         android:allowClearUserData="false"
         android:appCategory="social"
@@ -18,9 +19,11 @@
             android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".InitializeActivity"></activity>
     </application>
 
 </manifest>
