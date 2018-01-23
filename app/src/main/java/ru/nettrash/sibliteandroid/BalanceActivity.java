@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class BalanceActivity extends BaseActivity {
@@ -31,6 +32,7 @@ public class BalanceActivity extends BaseActivity {
     private final Handler mHideHandler = new Handler();
     private View mContentView;
     private TextView mBalanceView;
+    private ImageButton mActionButton;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -90,6 +92,7 @@ public class BalanceActivity extends BaseActivity {
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
         mBalanceView = findViewById(R.id.balance_value);
+        mActionButton = findViewById(R.id.button_action);
 
         // Set up the user interaction to manually show or hide the system UI.
         /*mContentView.setOnClickListener(new View.OnClickListener() {
