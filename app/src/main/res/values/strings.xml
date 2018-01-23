@@ -24,4 +24,5 @@
 
     <string name="verifyPIN">Verify PIN</string>
     <string name="verifyPINContinue">Next</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>
