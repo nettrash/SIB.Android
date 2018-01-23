@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBlack"
-    tools:context="ru.nettrash.sibliteandroid.InitializeActivity">
+    tools:context="ru.nettrash.sibliteandroid.SetPINActivity">
 
     <ImageView
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
         <TextView
             android:layout_gravity="top"
             android:layout_marginTop="24pt"
-            android:text="@string/createWallet"
+            android:text="@string/setPIN"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
@@ -31,14 +31,15 @@
             android:textSize="16pt"/>
 
         <EditText
-            android:id="@+id/first_key_value_editor"
+            android:id="@+id/pin_value_editor"
             android:layout_width="match_parent"
             android:layout_height="21pt"
             android:layout_gravity="top"
             android:background="@color/colorTextEditorBackground"
             android:layout_marginTop="48pt"
-            android:inputType="none"
+            android:inputType="numberPassword"
             android:lines="1"
+            android:maxLength="4"
             android:textAlignment="center"
             android:alpha="0.5"
             android:textColorHighlight="@color/colorWhite"
@@ -52,11 +53,11 @@
             android:layout_marginTop="84pt"
             android:background="@color/colorBlack"
             android:alpha="0.3"
-            android:text="@string/createWalletContinue"
+            android:text="@string/setPINContinue"
             android:textSize="12pt"
             android:textAlignment="center"
             android:textColor="@color/colorWhite"
-            android:onClick="createWalletAndContinue_Click"
+            android:onClick="setPIN_Click"
             />
 
         <ImageView

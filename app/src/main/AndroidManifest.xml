@@ -14,6 +14,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".RootActivity"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/titleActivityRoot"
             android:theme="@style/FullscreenTheme">
@@ -25,11 +26,36 @@
         </activity>
         <activity
             android:name=".InitializeActivity"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/titleActivityInitialize"
-            android:theme="@style/FullscreenTheme">
-
-        </activity>
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".SetPINActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/titleActivitySetPIN"
+            android:windowSoftInputMode="stateVisible"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".VerifyPINActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/titleActivityVerifyPIN"
+            android:windowSoftInputMode="stateVisible"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".BalanceActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/titleActivityBalance"
+            android:theme="@style/FullscreenTheme" />
     </application>
 
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false"/>
+
+    <uses-permission
+        android:name="android.permission.USE_FINGERPRINT" />
 </manifest>

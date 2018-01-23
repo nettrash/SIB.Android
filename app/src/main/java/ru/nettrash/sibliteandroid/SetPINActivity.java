@@ -3,13 +3,24 @@ package ru.nettrash.sibliteandroid;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 
-public class RootActivity extends BaseActivity {
+public class SetPINActivity extends BaseActivity {
+
+    private String privateKeySource;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -29,6 +40,8 @@ public class RootActivity extends BaseActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
+    private EditText mPINValueEditor;
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -46,6 +59,7 @@ public class RootActivity extends BaseActivity {
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     };
+
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
         public void run() {
@@ -56,13 +70,16 @@ public class RootActivity extends BaseActivity {
             }
         }
     };
+
     private boolean mVisible;
+
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
             hide();
         }
     };
+
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -81,20 +98,45 @@ public class RootActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_root);
+        setContentView(R.layout.activity_set_pin);
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
+        mPINValueEditor = findViewById(R.id.pin_value_editor);
 
 
-        // Set up the user interaction to manually show or hide the system UI.
-        /*mContentView.setOnClickListener(new View.OnClickListener() {
+        privateKeySource = getIntent().getExtras().getString("PrivateKey");
+        mPINValueEditor.addTextChangedListener(new TextWatcher() {
+
             @Override
-            public void onClick(View view) {
-                toggle();
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() == 4) {
+                    //Переходим к проверке
+                    setPIN_Click(null);
+                }
             }
-        });*/
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable arg0) {
+
+            }
+        });
+        mPINValueEditor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    //do stuff
+                    setPIN_Click(null);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -106,23 +148,7 @@ public class RootActivity extends BaseActivity {
         // are available.
         //delayedHide(100);
 
-        sibApplication.initialize();
-
-
-        if (sibApplication.model.firstRun()) {
-            //create first address
-            Intent intent = new Intent(this, InitializeActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            this.finish();
-        } else {
-            //change context to balance
-            Intent intent = new Intent(this, BalanceActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            this.finish();
-        }
-
+        mPINValueEditor.setText("");
     }
 
     private void toggle() {
@@ -165,5 +191,28 @@ public class RootActivity extends BaseActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    public void setPIN_Click(View view) {
+        String pin = mPINValueEditor.getText().toString();
+        if (pin.length() == 4) {
+            Intent intent = new Intent(this, VerifyPINActivity.class);
+            intent.putExtra("PrivateKey", privateKeySource);
+            intent.putExtra("PIN", pin);
+            startActivity(intent);
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.alertDialogErrorTitle)
+                    .setMessage(R.string.alertDialogSetPINError)
+                    .setCancelable(false)
+                    .setNegativeButton(R.string.OK,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
     }
 }

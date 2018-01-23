@@ -8,8 +8,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
-public class RootActivity extends BaseActivity {
+public class BalanceActivity extends BaseActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -29,6 +30,8 @@ public class RootActivity extends BaseActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
+    private TextView mBalanceView;
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -82,11 +85,11 @@ public class RootActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_root);
+        setContentView(R.layout.activity_balance);
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
-
+        mBalanceView = findViewById(R.id.balance_value);
 
         // Set up the user interaction to manually show or hide the system UI.
         /*mContentView.setOnClickListener(new View.OnClickListener() {
@@ -104,24 +107,7 @@ public class RootActivity extends BaseActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        //delayedHide(100);
-
-        sibApplication.initialize();
-
-
-        if (sibApplication.model.firstRun()) {
-            //create first address
-            Intent intent = new Intent(this, InitializeActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            this.finish();
-        } else {
-            //change context to balance
-            Intent intent = new Intent(this, BalanceActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            this.finish();
-        }
+        delayedHide(100);
 
     }
 

@@ -2,9 +2,26 @@
     <string name="applicationName">SIBCoin</string>
 
     <string name="titleActivityRoot">SIBCoin</string>
-    <string name="titleActivityInitialize">SIBCoin</string>
+    <string name="titleActivityInitialize">SIBCoin - first steps</string>
+    <string name="titleActivitySetPIN">SIBCoin - set pin</string>
+    <string name="titleActivityVerifyPIN">SIBCoin - verify pin</string>
+    <string name="titleActivityBalance">SIBCoin</string>
+
+    <string name="alertDialogErrorTitle">Error</string>
+    <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
+    <string name="alertDialogVerifyPINError">Incorrect PIN</string>
+
+    <string name="OK">OK</string>
+    <string name="Cancel">Cancel</string>
 
     <string name="textLoading">Loading...</string>
 
     <string name="createWallet">Create wallet</string>
+    <string name="createWalletContinue">create &amp; continue</string>
+
+    <string name="setPIN">Set PIN</string>
+    <string name="setPINContinue">Next</string>
+
+    <string name="verifyPIN">Verify PIN</string>
+    <string name="verifyPINContinue">Next</string>
 </resources>

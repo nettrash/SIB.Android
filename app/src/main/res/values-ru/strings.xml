@@ -2,9 +2,26 @@
     <string name="applicationName">Червонец</string>
 
     <string name="titleActivityRoot">Червонец</string>
-    <string name="titleActivityInitialize">Червонец</string>
+    <string name="titleActivityInitialize">Червонец - первые шаги</string>
+    <string name="titleActivitySetPIN">Червонец - создание PIN</string>
+    <string name="titleActivityVerifyPIN">Червонец - проверка PIN</string>
+    <string name="titleActivityBalance">Червонец</string>
+
+    <string name="alertDialogErrorTitle">Ошибка</string>
+    <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
+    <string name="alertDialogVerifyPINError">Неверный PIN.</string>
+
+    <string name="OK">OK</string>
+    <string name="Cancel">Отмена</string>
 
     <string name="textLoading">Инициализация...</string>
 
     <string name="createWallet">Создание кошелька</string>
+    <string name="createWalletContinue">создать и продолжить</string>
+
+    <string name="setPIN">Установка PIN</string>
+    <string name="setPINContinue">Установить и продолжить</string>
+
+    <string name="verifyPIN">Проверка PIN</string>
+    <string name="verifyPINContinue">Проверить и продолжить</string>
 </resources>

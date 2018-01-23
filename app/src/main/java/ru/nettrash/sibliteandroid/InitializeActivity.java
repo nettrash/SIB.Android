@@ -3,6 +3,7 @@ package ru.nettrash.sibliteandroid;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
@@ -97,12 +98,12 @@ public class InitializeActivity extends BaseActivity {
         mFirstKeyValueEditor = findViewById(R.id.first_key_value_editor);
 
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
+        /*mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 toggle();
             }
-        });
+        });*/
     }
 
     @Override
@@ -112,9 +113,10 @@ public class InitializeActivity extends BaseActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
+        //delayedHide(100);
 
         mFirstKeyValueEditor.setText(UUID.randomUUID().toString());
+        mFirstKeyValueEditor.clearFocus(); //not focus default editor for private key source
     }
 
     private void toggle() {
@@ -157,5 +159,11 @@ public class InitializeActivity extends BaseActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    public void createWalletAndContinue_Click(View view) {
+        Intent intent = new Intent(this, SetPINActivity.class);
+        intent.putExtra("PrivateKey", mFirstKeyValueEditor.getText().toString());
+        startActivity(intent);
     }
 }
