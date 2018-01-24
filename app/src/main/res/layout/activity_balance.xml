@@ -23,9 +23,9 @@
             android:layout_height="58pt"
             android:layout_gravity="start"
             android:scaleType="fitCenter"
-            android:layout_marginLeft="16px"
-            android:layout_marginTop="16px"
-            android:layout_marginRight="16px"
+            android:layout_marginLeft="4pt"
+            android:layout_marginTop="4pt"
+            android:layout_marginRight="4pt"
             android:src="@drawable/logo"/>
 
         <TextView
@@ -41,12 +41,137 @@
             android:textStyle="bold"
             android:fontFamily="Helvetica"/>
 
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="128pt"
+            android:layout_gravity="top"
+            android:layout_marginLeft="4pt"
+            android:layout_marginRight="4pt"
+            android:layout_marginTop="104pt">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="15pt"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/segment_button_sib"
+                    android:textAllCaps="false"
+                    android:layout_width="40pt"
+                    android:layout_height="match_parent"
+                    android:text="@string/tabTitleSIB"
+                    android:background = "@drawable/segment_button_start_selected"
+                    android:textColor="@color/colorBlack"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="7pt"
+                    />
+                <Button
+                    android:id="@+id/segment_button_rates"
+                    android:textAllCaps="false"
+                    android:layout_width="40pt"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="-3px"
+                    android:text="@string/tabTitleRates"
+                    android:background = "@drawable/segment_button_middle"
+                    android:textColor="@color/colorWhite"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="7pt"/>
+                <Button
+                    android:id="@+id/segment_button_buy"
+                    android:textAllCaps="false"
+                    android:layout_width="40pt"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="-3px"
+                    android:text="@string/tabTitleBuy"
+                    android:background = "@drawable/segment_button_middle"
+                    android:textColor="@color/colorWhite"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="7pt"/>
+                <Button
+                    android:id="@+id/segment_button_sell"
+                    android:textAllCaps="false"
+                    android:layout_width="40pt"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="-3px"
+                    android:text="@string/tabTitleSell"
+                    android:background = "@drawable/segment_button_end"
+                    android:textColor="@color/colorWhite"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="7pt"/>
+
+            </LinearLayout>
+
+            <ViewFlipper
+                android:id="@+id/view_flipper"
+                android:layout_gravity="top"
+                android:layout_marginTop="24pt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textSize="32pt"
+                        android:textColor="@color/colorWhite"
+                        android:text="SIB"
+                        android:textAlignment="center"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textSize="32pt"
+                        android:textColor="@color/colorWhite"
+                        android:text="Rates"
+                        android:textAlignment="center"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textSize="32pt"
+                        android:textColor="@color/colorWhite"
+                        android:text="Buy"
+                        android:textAlignment="center"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textSize="32pt"
+                        android:textColor="@color/colorWhite"
+                        android:text="Sell"
+                        android:textAlignment="center"/>
+                </LinearLayout>
+
+            </ViewFlipper>
+
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
-            android:layout_marginLeft="24px"
-            android:layout_marginBottom="24px">
+            android:layout_marginLeft="6pt"
+            android:layout_marginBottom="6pt">
 
             <ImageButton
                 android:id="@+id/button_action"
@@ -60,10 +185,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="24px"
+                android:layout_marginLeft="6pt"
                 android:src="@drawable/tapinfo" />
 
         </LinearLayout>
+
     </FrameLayout>
 
 </FrameLayout>

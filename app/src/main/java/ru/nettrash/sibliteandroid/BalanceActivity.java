@@ -2,16 +2,24 @@ package ru.nettrash.sibliteandroid;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 public class BalanceActivity extends BaseActivity {
+
+    private int _firstX;
+    private int _firstY;
+    private static final int SWIPE_MIN_X_DISTANCE = 100;
+    private static final int SWIPE_MIN_Y_DISTANCE = 10;
+    private int mSelectedSegment = 0;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -33,6 +41,12 @@ public class BalanceActivity extends BaseActivity {
     private View mContentView;
     private TextView mBalanceView;
     private ImageButton mActionButton;
+    private ViewFlipper mViewFlipper;
+
+    private Button mSegmentButtonSIB;
+    private Button mSegmentButtonRates;
+    private Button mSegmentButtonBuy;
+    private Button mSegmentButtonSell;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -93,6 +107,46 @@ public class BalanceActivity extends BaseActivity {
         mContentView = findViewById(R.id.fullscreen_content);
         mBalanceView = findViewById(R.id.balance_value);
         mActionButton = findViewById(R.id.button_action);
+        mViewFlipper = findViewById(R.id.view_flipper);
+
+        mSegmentButtonSIB = findViewById(R.id.segment_button_sib);
+        mSegmentButtonRates = findViewById(R.id.segment_button_rates);
+        mSegmentButtonBuy = findViewById(R.id.segment_button_buy);
+        mSegmentButtonSell = findViewById(R.id.segment_button_sell);
+
+        final BalanceActivity self = this;
+
+        mViewFlipper.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    _firstX = (int) event.getX();
+                    _firstY = (int) event.getY();
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    int LastX = (int) event.getX();
+
+                    if (_firstX - LastX > SWIPE_MIN_X_DISTANCE) {
+                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_right_in));
+                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_left_out));
+                        mViewFlipper.showNext();
+                        mSelectedSegment++;
+                        if (mSelectedSegment > 3) mSelectedSegment = 0;
+                        updateButtonState();
+                    } else if (LastX - _firstX > SWIPE_MIN_X_DISTANCE) {
+                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_left_in));
+                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_right_out));
+                        mViewFlipper.showPrevious();
+                        mSelectedSegment--;
+                        if (mSelectedSegment < 0) mSelectedSegment = 3;
+                        updateButtonState();
+                    }
+                }
+
+                return true;
+            }
+        });
 
         // Set up the user interaction to manually show or hide the system UI.
         /*mContentView.setOnClickListener(new View.OnClickListener() {
@@ -112,6 +166,39 @@ public class BalanceActivity extends BaseActivity {
         // are available.
         delayedHide(100);
 
+    }
+
+    private void deselectAllSegments() {
+        mSegmentButtonSIB.setBackground(getResources().getDrawable(R.drawable.segment_button_start, this.getTheme()));
+        mSegmentButtonSIB.setTextColor(getResources().getColor(R.color.colorWhite, this.getTheme()));
+        mSegmentButtonRates.setBackground(getResources().getDrawable(R.drawable.segment_button_middle, this.getTheme()));
+        mSegmentButtonRates.setTextColor(getResources().getColor(R.color.colorWhite, this.getTheme()));
+        mSegmentButtonBuy.setBackground(getResources().getDrawable(R.drawable.segment_button_middle, this.getTheme()));
+        mSegmentButtonBuy.setTextColor(getResources().getColor(R.color.colorWhite, this.getTheme()));
+        mSegmentButtonSell.setBackground(getResources().getDrawable(R.drawable.segment_button_end, this.getTheme()));
+        mSegmentButtonSell.setTextColor(getResources().getColor(R.color.colorWhite, this.getTheme()));
+    }
+
+    private void updateButtonState() {
+        deselectAllSegments();
+        switch (mSelectedSegment) {
+            case 1:
+                mSegmentButtonRates.setBackground(getResources().getDrawable(R.drawable.segment_button_middle_selected, this.getTheme()));
+                mSegmentButtonRates.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                break;
+            case 2:
+                mSegmentButtonBuy.setBackground(getResources().getDrawable(R.drawable.segment_button_middle_selected, this.getTheme()));
+                mSegmentButtonBuy.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                break;
+            case 3:
+                mSegmentButtonSell.setBackground(getResources().getDrawable(R.drawable.segment_button_end_selected, this.getTheme()));
+                mSegmentButtonSell.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                break;
+            default:
+                mSegmentButtonSIB.setBackground(getResources().getDrawable(R.drawable.segment_button_start_selected, this.getTheme()));
+                mSegmentButtonSIB.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                break;
+        }
     }
 
     private void toggle() {

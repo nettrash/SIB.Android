@@ -3,6 +3,7 @@ package ru.nettrash.sibliteandroid;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.app.FragmentManager;
 
 /**
  * Created by nettrash on 20.01.2018.
@@ -11,6 +12,7 @@ import android.os.Bundle;
 class BaseActivity extends Activity {
 
     protected SIBApplication sibApplication;
+    protected FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -25,4 +25,10 @@
     <string name="verifyPIN">Verify PIN</string>
     <string name="verifyPINContinue">Next</string>
     <string name="title_activity_main">MainActivity</string>
+
+    <string name="tabTitleSIB">SIB</string>
+    <string name="tabTitleRates">Rates</string>
+    <string name="tabTitleBuy">Buy</string>
+    <string name="tabTitleSell">Sell</string>
+
 </resources>

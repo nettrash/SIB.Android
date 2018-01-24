@@ -24,4 +24,10 @@
 
     <string name="verifyPIN">Проверка PIN</string>
     <string name="verifyPINContinue">Проверить и продолжить</string>
+
+    <string name="tabTitleSIB">SIB</string>
+    <string name="tabTitleRates">Курсы</string>
+    <string name="tabTitleBuy">Купить</string>
+    <string name="tabTitleSell">Продать</string>
+
 </resources>
