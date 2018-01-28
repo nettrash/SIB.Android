@@ -390,13 +390,6 @@ public class BalanceActivity extends BaseActivity {
 
         });
 
-        // Set up the user interaction to manually show or hide the system UI.
-        /*mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });*/
     }
 
     public void segmentButtonClick(View view) {
