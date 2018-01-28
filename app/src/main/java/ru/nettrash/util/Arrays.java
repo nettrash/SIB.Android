@@ -1,5 +1,7 @@
 package ru.nettrash.util;
 
+import android.support.annotation.NonNull;
+
 import org.jetbrains.annotations.Contract;
 import java.util.*;
 
@@ -26,6 +28,14 @@ public final class Arrays {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    @NonNull
+    public static String toHexString(byte[] data) {
+        StringBuilder sb = new StringBuilder(data.length * 2);
+        for(byte b: data)
+            sb.append(String.format("%02x", b));
+        return sb.toString();
     }
 
     @Contract(pure = true)

@@ -42,4 +42,6 @@ public final class rootModel extends baseModel {
         database.addressDao().insertAll(address);
     }
 
+    public List<Address> getAddresses() throws Exception { return database.addressDao().getAll(); };
+
 }

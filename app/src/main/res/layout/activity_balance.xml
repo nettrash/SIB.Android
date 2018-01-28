@@ -66,8 +66,8 @@
                     android:textAlignment="center"
                     android:textStyle="normal"
                     android:gravity="center_horizontal|center_vertical"
-                    android:textSize="7pt"
-                    />
+                    android:textSize="6pt"
+                    android:onClick="segmentButtonClick"/>
                 <Button
                     android:id="@+id/segment_button_rates"
                     android:textAllCaps="false"
@@ -80,7 +80,8 @@
                     android:textAlignment="center"
                     android:textStyle="normal"
                     android:gravity="center_horizontal|center_vertical"
-                    android:textSize="7pt"/>
+                    android:textSize="6pt"
+                    android:onClick="segmentButtonClick"/>
                 <Button
                     android:id="@+id/segment_button_buy"
                     android:textAllCaps="false"
@@ -93,7 +94,8 @@
                     android:textAlignment="center"
                     android:textStyle="normal"
                     android:gravity="center_horizontal|center_vertical"
-                    android:textSize="7pt"/>
+                    android:textSize="6pt"
+                    android:onClick="segmentButtonClick"/>
                 <Button
                     android:id="@+id/segment_button_sell"
                     android:textAllCaps="false"
@@ -106,7 +108,8 @@
                     android:textAlignment="center"
                     android:textStyle="normal"
                     android:gravity="center_horizontal|center_vertical"
-                    android:textSize="7pt"/>
+                    android:textSize="6pt"
+                    android:onClick="segmentButtonClick"/>
 
             </LinearLayout>
 
@@ -119,14 +122,34 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10pt"
+                    android:layout_marginRight="10pt"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
                     <TextView
+                        android:id="@+id/label_no_ops"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:textSize="32pt"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top"
+                        android:textSize="10pt"
+                        android:visibility="invisible"
                         android:textColor="@color/colorWhite"
-                        android:text="SIB"
+                        android:text="@string/textNoOps"
                         android:textAlignment="center"/>
+                    <android.support.v4.widget.SwipeRefreshLayout
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:id="@+id/last_ops_refresh"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <ListView
+                            android:id="@+id/last_history_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:dividerHeight="0dp"
+                            android:divider="@null"/>
+                    </android.support.v4.widget.SwipeRefreshLayout>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -169,6 +192,111 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|start"
+            android:layout_marginLeft="12pt"
+            android:layout_marginBottom="36pt">
+
+            <LinearLayout
+                android:id="@+id/action_layout_receive"
+                android:visibility="invisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6pt"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/button_receive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@null"
+                    android:src="@drawable/actionbuttonreceive"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="4pt"
+                    android:paddingLeft="4pt"
+                    android:paddingRight="4pt"
+                    android:textSize="6pt"
+                    android:textColor="@color/colorWhite"
+                    android:text="@string/actionButtonReceive"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/action_layout_send"
+                android:visibility="invisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6pt"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/button_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@null"
+                    android:src="@drawable/actionbuttonsend"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="4pt"
+                    android:paddingLeft="4pt"
+                    android:paddingRight="4pt"
+                    android:textSize="6pt"
+                    android:textColor="@color/colorWhite"
+                    android:text="@string/actionButtonSend"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/action_layout_history"
+                android:visibility="invisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6pt"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/button_history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@null"
+                    android:src="@drawable/actionbuttonhistory"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="4pt"
+                    android:paddingLeft="4pt"
+                    android:paddingRight="4pt"
+                    android:textSize="6pt"
+                    android:textColor="@color/colorWhite"
+                    android:text="@string/actionButtonHistory"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/button_settings"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginRight="12pt"
+            android:layout_marginBottom="12pt"
+            android:background="@null"
+            android:src="@drawable/actionbuttonsettings"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
             android:layout_marginLeft="6pt"
             android:layout_marginBottom="6pt">
@@ -182,6 +310,7 @@
                 android:src="@drawable/actionbutton"/>
 
             <ImageView
+                android:id="@+id/image_tap"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"

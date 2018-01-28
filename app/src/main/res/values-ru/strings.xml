@@ -30,4 +30,12 @@
     <string name="tabTitleBuy">Купить</string>
     <string name="tabTitleSell">Продать</string>
 
+    <string name="textNoOps">нет операций</string>
+
+    <string name="balanceRefreshInProgress">...</string>
+    <string name="balanceRefreshError">ошибка</string>
+
+    <string name="actionButtonReceive">Получить</string>
+    <string name="actionButtonSend">Отправить</string>
+    <string name="actionButtonHistory">История</string>
 </resources>

@@ -30,4 +30,12 @@
     <string name="tabTitleBuy">Buy</string>
     <string name="tabTitleSell">Sell</string>
 
+    <string name="textNoOps">no ops</string>
+
+    <string name="balanceRefreshInProgress">...</string>
+    <string name="balanceRefreshError">error</string>
+
+    <string name="actionButtonReceive">Receive</string>
+    <string name="actionButtonSend">Send</string>
+    <string name="actionButtonHistory">History</string>
 </resources>
