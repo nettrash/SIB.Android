@@ -8,6 +8,7 @@
 
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorDark">#434343</color>
 
-    <color name="colorTextEditorBackground">#FFFFFF</color>
+    <color name="colorTextEditorBackground">#88FFFFFF</color>
 </resources>

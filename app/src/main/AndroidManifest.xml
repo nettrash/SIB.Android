@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.nettrash.sibliteandroid">
 
-    <uses-permission android:name="android.permission.INTERNET"/>"/>
-
+    <uses-permission android:name="android.permission.INTERNET" />
+    "/>
     <application
         android:name=".SIBApplication"
         android:allowBackup="true"
@@ -51,6 +51,13 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/titleActivityBalance"
             android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".ReceiveActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/titleActivityReceive"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden"
             android:theme="@style/FullscreenTheme" />
     </application>
 

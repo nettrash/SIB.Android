@@ -23,7 +23,7 @@ public interface AddressDao {
     Address loadAllByType(short type);
 
     @Query("SELECT * FROM address WHERE type = 0")
-    Address findOnlyIncoming();
+    List<Address> findOnlyIncoming();
 
     @Query("SELECT COUNT(*) FROM address")
     long count();

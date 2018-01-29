@@ -42,6 +42,12 @@ public final class rootModel extends baseModel {
         database.addressDao().insertAll(address);
     }
 
-    public List<Address> getAddresses() throws Exception { return database.addressDao().getAll(); };
+    public List<Address> getAddresses() throws Exception { return database.addressDao().getAll(); }
+
+    public Address getAddressForInput() throws Exception {
+        List<Address> incoming = database.addressDao().findOnlyIncoming();
+        Address[] addresses = incoming.toArray(new Address[0]);
+        return addresses[addresses.length-1];
+    }
 
 }

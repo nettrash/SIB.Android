@@ -169,4 +169,16 @@ public final class sibAPI {
             throw new Exception("Error get balance");
         }
     }
+
+    public boolean checkInputExists(String address) throws Exception {
+        String url = urlAPIRoot + "/hasInput";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("address", address);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("InputExistsResult");
+        return result.getBoolean("Success") && result.getBoolean("Exists");
+    }
 }

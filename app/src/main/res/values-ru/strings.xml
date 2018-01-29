@@ -6,10 +6,14 @@
     <string name="titleActivitySetPIN">Червонец - создание PIN</string>
     <string name="titleActivityVerifyPIN">Червонец - проверка PIN</string>
     <string name="titleActivityBalance">Червонец</string>
+    <string name="titleActivityReceive">Червонец - Получить</string>
 
     <string name="alertDialogErrorTitle">Ошибка</string>
     <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
     <string name="alertDialogVerifyPINError">Неверный PIN.</string>
+
+    <string name="alertDialogClipboardTitle">Буфер обмена</string>
+    <string name="alertDialogClipboardMessage">Успешно скопировано в буфер обмена.</string>
 
     <string name="OK">OK</string>
     <string name="Cancel">Отмена</string>
@@ -38,4 +42,10 @@
     <string name="actionButtonReceive">Получить</string>
     <string name="actionButtonSend">Отправить</string>
     <string name="actionButtonHistory">История</string>
+
+    <string name="receive">Адрес</string>
+
+    <string name="sibAddress">Червонец: Адрес </string>
+
+    <string name="hintAmount">сумма</string>
 </resources>

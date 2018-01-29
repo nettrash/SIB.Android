@@ -6,10 +6,14 @@
     <string name="titleActivitySetPIN">SIBCoin - set pin</string>
     <string name="titleActivityVerifyPIN">SIBCoin - verify pin</string>
     <string name="titleActivityBalance">SIBCoin</string>
+    <string name="titleActivityReceive">SIBCoin - receive</string>
 
     <string name="alertDialogErrorTitle">Error</string>
     <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
     <string name="alertDialogVerifyPINError">Incorrect PIN</string>
+
+    <string name="alertDialogClipboardTitle">Clipboard</string>
+    <string name="alertDialogClipboardMessage">Copied to clipboard.</string>
 
     <string name="OK">OK</string>
     <string name="Cancel">Cancel</string>
@@ -39,4 +43,10 @@
     <string name="actionButtonReceive">Receive</string>
     <string name="actionButtonSend">Send</string>
     <string name="actionButtonHistory">History</string>
+
+    <string name="receive">Address</string>
+
+    <string name="sibAddress">SIBCoin Address</string>
+
+    <string name="hintAmount">amount</string>
 </resources>

@@ -2,6 +2,7 @@ package ru.nettrash.sibliteandroid;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -338,6 +339,29 @@ public class BalanceActivity extends BaseActivity {
             }
         });
 
+        mActionButtonReceive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float deg = mActionButton.getRotation() + 270F;
+                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
+                if (mImageTap.getVisibility() == View.VISIBLE) {
+                    mImageTap.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
+                    mActionButtonSettings.setVisibility(View.VISIBLE);
+                } else {
+                    mImageTap.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
+                    mActionButtonSettings.setVisibility(View.INVISIBLE);
+                }
+                Intent intent = new Intent(self, ReceiveActivity.class);
+                startActivity(intent);
+            }
+        });
+
         mBalanceView.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 mSwipeRefreshLastOps.setRefreshing(true);
@@ -434,6 +458,12 @@ public class BalanceActivity extends BaseActivity {
         delayedHide(100);
         refreshLastHistory();
         refreshBalance();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        delayedHide(100);
     }
 
     private void deselectAllSegments() {
