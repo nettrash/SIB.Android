@@ -232,6 +232,7 @@ public class BalanceActivity extends BaseActivity {
                 super.onPostExecute(result);
                 if (result != null) {
                     mBalanceView.setText(String.format("%.2f", result.doubleValue()).replace(",", "."));
+                    sibApplication.model.setBalance(result);
                 }
                 _refreshLastOpsCount--;
                 if (_refreshLastOpsCount<=0) {
@@ -358,6 +359,29 @@ public class BalanceActivity extends BaseActivity {
                     mActionButtonSettings.setVisibility(View.INVISIBLE);
                 }
                 Intent intent = new Intent(self, ReceiveActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mActionButtonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float deg = mActionButton.getRotation() + 270F;
+                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
+                if (mImageTap.getVisibility() == View.VISIBLE) {
+                    mImageTap.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
+                    mActionButtonSettings.setVisibility(View.VISIBLE);
+                } else {
+                    mImageTap.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
+                    mActionButtonSettings.setVisibility(View.INVISIBLE);
+                }
+                Intent intent = new Intent(self, SendActivity.class);
                 startActivity(intent);
             }
         });

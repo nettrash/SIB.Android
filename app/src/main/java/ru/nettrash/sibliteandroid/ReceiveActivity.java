@@ -10,16 +10,23 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -28,6 +35,9 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -58,6 +68,7 @@ public class ReceiveActivity extends BaseActivity {
     private View mContentView;
     private TextView mAddressView;
     private EditText mAmountView;
+    private ImageButton mButtonShareView;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -122,6 +133,7 @@ public class ReceiveActivity extends BaseActivity {
         mContentView = findViewById(R.id.fullscreen_content);
         mAddressView = findViewById(R.id.receive_address_value);
         mAmountView = findViewById(R.id.receive_amount_value);
+        mButtonShareView = findViewById(R.id.btn_share);
 
         try {
             Address address = sibApplication.model.getAddressForInput();
@@ -186,6 +198,41 @@ public class ReceiveActivity extends BaseActivity {
                     hide();
                 }
                 return false;
+            }
+        });
+
+        mButtonShareView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Share image bitmap
+                try {
+                    ImageView img = findViewById(R.id.image_receive_qr);
+                    img.setDrawingCacheEnabled(true);
+                    Bitmap mBitmap = img.getDrawingCache();
+
+                    File root = Environment.getExternalStorageDirectory();
+                    File cachePath = new File(root.getAbsolutePath() + "/DCIM/Camera/sibQR_"+mAddressView.getText().toString()+".jpg");
+                    try
+                    {
+                        root.createNewFile();
+                        FileOutputStream ostream = new FileOutputStream(root);
+                        mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, ostream);
+                        ostream.close();
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    Uri phototUri = Uri.parse("/DCIM/Camera/sibQR_"+mAddressView.getText().toString()+".jpg");
+                    shareIntent.setData(phototUri);
+                    shareIntent.setType("image/*");
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, phototUri);
+                    startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.addressShareTitle)));
+                } catch (Exception ex) {
+
+                }
             }
         });
 

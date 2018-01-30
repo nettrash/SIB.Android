@@ -7,6 +7,8 @@ package ru.nettrash.sibcoin.models;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.List;
 import ru.nettrash.sibcoin.database.Address;
 import ru.nettrash.sibcoin.database.AddressDao;
@@ -16,6 +18,7 @@ import ru.nettrash.sibcoin.sibWallet;
 public final class rootModel extends baseModel {
 
     private SIBDatabase database;
+    private Double balance;
 
     private void _init(Context context) {
         database = SIBDatabase.getSIBDatabase(context);
@@ -49,5 +52,10 @@ public final class rootModel extends baseModel {
         Address[] addresses = incoming.toArray(new Address[0]);
         return addresses[addresses.length-1];
     }
+
+    public void setBalance(Double value) { balance = value; }
+
+    @Contract(pure = true)
+    public Double getBalance() { return balance; }
 
 }

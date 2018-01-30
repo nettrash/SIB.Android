@@ -3,7 +3,13 @@
     package="ru.nettrash.sibliteandroid">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    "/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
+    <uses-permission android:name="android.permission.CAPTURE_SECURE_VIDEO_OUTPUT" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
     <application
         android:name=".SIBApplication"
         android:allowBackup="true"
@@ -22,7 +28,6 @@
             android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -57,8 +62,14 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/titleActivityReceive"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"
             android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".SendActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/titleActivitySend"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme"
+            android:windowSoftInputMode="stateVisible"/>
     </application>
 
 </manifest>

@@ -7,6 +7,7 @@
     <string name="titleActivityVerifyPIN">Червонец - проверка PIN</string>
     <string name="titleActivityBalance">Червонец</string>
     <string name="titleActivityReceive">Червонец - Получить</string>
+    <string name="titleActivitySend">Червонец - Отправить</string>
 
     <string name="alertDialogErrorTitle">Ошибка</string>
     <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
@@ -44,8 +45,16 @@
     <string name="actionButtonHistory">История</string>
 
     <string name="receive">Адрес</string>
+    <string name="send">Перевод</string>
 
     <string name="sibAddress">Червонец: Адрес </string>
 
     <string name="hintAmount">сумма</string>
+    <string name="hintAddress">адрес</string>
+    <string name="hintCommission">комиссия</string>
+
+    <string name="btnSendText">Отправить перевод</string>
+
+    <string name="addressShareDescription">Червонец: Реквизиты пополнения</string>
+    <string name="addressShareTitle">Поделиться реквизитами</string>
 </resources>

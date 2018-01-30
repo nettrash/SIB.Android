@@ -7,6 +7,7 @@
     <string name="titleActivityVerifyPIN">SIBCoin - verify pin</string>
     <string name="titleActivityBalance">SIBCoin</string>
     <string name="titleActivityReceive">SIBCoin - receive</string>
+    <string name="titleActivitySend">SIBCoin - send</string>
 
     <string name="alertDialogErrorTitle">Error</string>
     <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
@@ -45,8 +46,16 @@
     <string name="actionButtonHistory">History</string>
 
     <string name="receive">Address</string>
+    <string name="send">Transfer</string>
 
     <string name="sibAddress">SIBCoin Address</string>
 
     <string name="hintAmount">amount</string>
+    <string name="hintAddress">address</string>
+    <string name="hintCommission">commission</string>
+
+    <string name="btnSendText">Send transfer</string>
+
+    <string name="addressShareDescription">SIBCoin Requisites</string>
+    <string name="addressShareTitle">Share Requisites</string>
 </resources>

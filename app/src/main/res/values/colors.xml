@@ -11,4 +11,5 @@
     <color name="colorDark">#434343</color>
 
     <color name="colorTextEditorBackground">#88FFFFFF</color>
+    <color name="colorButtonBackground">#19000000</color>
 </resources>

@@ -72,5 +72,15 @@
             android:scaleType="fitCenter"
             android:src="@drawable/logo"/>
 
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/action"
+            android:layout_gravity="top|end"
+            android:background="@null"
+            android:layout_marginTop="7pt"
+            android:layout_marginRight="4pt"/>
+
     </FrameLayout>
 </FrameLayout>

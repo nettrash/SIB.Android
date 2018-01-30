@@ -194,7 +194,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="bottom|start"
-            android:layout_marginLeft="12pt"
+            android:layout_marginLeft="9pt"
             android:layout_marginBottom="36pt">
 
             <LinearLayout
@@ -220,7 +220,7 @@
                     android:layout_marginLeft="4pt"
                     android:paddingLeft="4pt"
                     android:paddingRight="4pt"
-                    android:textSize="6pt"
+                    android:textSize="8pt"
                     android:textColor="@color/colorWhite"
                     android:text="@string/actionButtonReceive"/>
             </LinearLayout>
@@ -248,7 +248,7 @@
                     android:layout_marginLeft="4pt"
                     android:paddingLeft="4pt"
                     android:paddingRight="4pt"
-                    android:textSize="6pt"
+                    android:textSize="8pt"
                     android:textColor="@color/colorWhite"
                     android:text="@string/actionButtonSend"/>
             </LinearLayout>
@@ -276,7 +276,7 @@
                     android:layout_marginLeft="4pt"
                     android:paddingLeft="4pt"
                     android:paddingRight="4pt"
-                    android:textSize="6pt"
+                    android:textSize="8pt"
                     android:textColor="@color/colorWhite"
                     android:text="@string/actionButtonHistory"/>
             </LinearLayout>
