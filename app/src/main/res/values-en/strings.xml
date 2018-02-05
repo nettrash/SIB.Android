@@ -8,6 +8,7 @@
     <string name="titleActivityBalance">SIBCoin</string>
     <string name="titleActivityReceive">SIBCoin - receive</string>
     <string name="titleActivitySend">SIBCoin - send</string>
+    <string name="titleActivityHistory">SIBCoin - history</string>
 
     <string name="alertDialogErrorTitle">Error</string>
     <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
@@ -16,8 +17,11 @@
     <string name="alertDialogClipboardTitle">Clipboard</string>
     <string name="alertDialogClipboardMessage">Copied to clipboard.</string>
 
+    <string name="alertDialogBroadcastTitle">Broadcasted</string>
+
     <string name="OK">OK</string>
     <string name="Cancel">Cancel</string>
+    <string name="CopyToClipboard">Copy to clipboard</string>
 
     <string name="textLoading">Loading...</string>
 
@@ -46,8 +50,10 @@
 
     <string name="receive">Address</string>
     <string name="send">Transfer</string>
+    <string name="history">History</string>
 
     <string name="sibAddress">SIBCoin Address</string>
+    <string name="sibTransactionId">txid</string>
 
     <string name="hintAmount">amount</string>
     <string name="hintAddress">address</string>
@@ -57,4 +63,6 @@
 
     <string name="addressShareDescription">SIBCoin Requisites</string>
     <string name="addressShareTitle">Share Requisites</string>
+
+    <string name="successBroadcasted">Transaction sent to network. txid: </string>
 </resources>

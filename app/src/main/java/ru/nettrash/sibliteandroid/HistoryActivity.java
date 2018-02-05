@@ -6,8 +6,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -15,11 +17,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class SetPINActivity extends BaseActivity {
+import java.util.ArrayList;
+import java.util.Map;
 
-    private String privateKeySource;
+import ru.nettrash.sibcoin.classes.sibHistoryItem;
+import ru.nettrash.sibcoin.database.Address;
+import ru.nettrash.sibcoin.sibAPI;
+
+public class HistoryActivity extends BaseActivity {
+
+    private int HISTORY_MAX_COUNT = 5000;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -40,7 +51,8 @@ public class SetPINActivity extends BaseActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
-    private EditText mPINValueEditor;
+    private ListView mHistoryListView;
+    private SwipeRefreshLayout mSwipeRefreshHistory;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -98,45 +110,24 @@ public class SetPINActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_set_pin);
+        setContentView(R.layout.activity_history);
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
-        mPINValueEditor = findViewById(R.id.pin_value_editor);
+
+        mHistoryListView = findViewById(R.id.history_view);
+        mSwipeRefreshHistory = findViewById(R.id.history_refresh);
 
 
-        privateKeySource = getIntent().getExtras().getString("PrivateKey");
-        mPINValueEditor.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() == 4) {
-                    //Переходим к проверке
-                    setPIN_Click(null);
+        mSwipeRefreshHistory.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        refreshHistory();
+                    }
                 }
-            }
+        );
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                                          int after) {
-
-            }
-            @Override
-            public void afterTextChanged(Editable arg0) {
-
-            }
-        });
-        mPINValueEditor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    //do stuff
-                    setPIN_Click(null);
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     @Override
@@ -147,14 +138,7 @@ public class SetPINActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
-
-        mPINValueEditor.setText("");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        delayedHide(100);
+        refreshHistory();
     }
 
     private void toggle() {
@@ -199,26 +183,91 @@ public class SetPINActivity extends BaseActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    public void setPIN_Click(View view) {
-        String pin = mPINValueEditor.getText().toString();
-        if (pin.length() == 4) {
-            Intent intent = new Intent(this, VerifyPINActivity.class);
-            intent.putExtra("PrivateKey", privateKeySource);
-            intent.putExtra("PIN", pin);
-            startActivity(intent);
-        } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.alertDialogErrorTitle)
-                    .setMessage(R.string.alertDialogSetPINError)
-                    .setCancelable(false)
-                    .setNegativeButton(R.string.OK,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-            AlertDialog alert = builder.create();
-            alert.show();
+    private void refreshHistory() {
+
+        final HistoryActivity self = this;
+
+        final class historyAsyncTask extends AsyncTask<Void, Void, ArrayList<sibHistoryItem>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+            protected String[] addressesInput = new String[0];
+            protected String[] addressesChange = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                mSwipeRefreshHistory.setRefreshing(true);
+
+                ArrayList<String> addrs = new ArrayList<String>();
+                ArrayList<String> addrsInput = new ArrayList<String>();
+                ArrayList<String> addrsChange = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                        switch (a.getAddressType()) {
+                            case (short) 0: {
+                                addrsInput.add(a.getAddress());
+                                break;
+                            }
+                            case (short) 1: {
+                                addrsChange.add(a.getAddress());
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+                    addressesInput = addrsInput.toArray(new String[0]);
+                    addressesChange = addrsChange.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Override
+            protected ArrayList<sibHistoryItem> doInBackground(Void... params) {
+                try {
+                    return api.getLastTransactions(HISTORY_MAX_COUNT, addresses, addressesInput, addressesChange);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibHistoryItem> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+                    for (sibHistoryItem item: result) {
+                        data.add(item.getHashMap());
+                    }
+                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                    mHistoryListView.setAdapter(adapter);
+                }
+                mSwipeRefreshHistory.setRefreshing(false);
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibHistoryItem> result) {
+                super.onCancelled(result);
+                mSwipeRefreshHistory.setRefreshing(false);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                mSwipeRefreshHistory.setRefreshing(false);
+            }
         }
+
+        new historyAsyncTask().execute();
+
     }
 }

@@ -113,10 +113,16 @@ public class InitializeActivity extends BaseActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        //delayedHide(100);
+        delayedHide(100);
 
         mFirstKeyValueEditor.setText(UUID.randomUUID().toString());
         mFirstKeyValueEditor.clearFocus(); //not focus default editor for private key source
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        delayedHide(100);
     }
 
     private void toggle() {

@@ -193,7 +193,7 @@ public final class sibAddress {
                 }
             }
         }
-        retVal = ru.nettrash.util.Arrays.append(retVal, addrBytes, 1, addrBytes.length-4);
+        retVal = ru.nettrash.util.Arrays.append(retVal, addrBytes, 1, addrBytes.length-5);
         retVal = ru.nettrash.util.Arrays.append(retVal, 136); //OP_EQUALVERIFY
         retVal = ru.nettrash.util.Arrays.append(retVal, 172); //OP_CHECKSIG
 

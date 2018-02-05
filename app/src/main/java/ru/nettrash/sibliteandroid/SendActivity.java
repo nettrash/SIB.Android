@@ -16,16 +16,20 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
@@ -36,12 +40,21 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 
+import ru.nettrash.sibcoin.classes.sibHistoryItem;
+import ru.nettrash.sibcoin.classes.sibUnspentTransaction;
 import ru.nettrash.sibcoin.database.Address;
 import ru.nettrash.sibcoin.sibAPI;
 import ru.nettrash.sibcoin.sibAddress;
+import ru.nettrash.sibcoin.sibBroadcastTransactionResult;
+import ru.nettrash.sibcoin.sibTransaction;
 import ru.nettrash.sibcoin.sibWallet;
+import ru.nettrash.util.Arrays;
+
+import static android.content.ContentValues.TAG;
 
 public class SendActivity extends BaseActivity {
 
@@ -68,6 +81,7 @@ public class SendActivity extends BaseActivity {
     private EditText mAmountView;
     private EditText mCommissionView;
     private ImageButton mScanView;
+    private Button mSendView;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -136,7 +150,7 @@ public class SendActivity extends BaseActivity {
         mAmountView = findViewById(R.id.send_amount_value);
         mCommissionView = findViewById(R.id.send_commission_value);
         mScanView = findViewById(R.id.btn_camera);
-
+        mSendView = findViewById(R.id.btn_send);
         TextView tv = findViewById(R.id.send_balance_value);
         tv.setText(String.format("%.2f SIB", sibApplication.model.getBalance().doubleValue()));
 
@@ -174,6 +188,12 @@ public class SendActivity extends BaseActivity {
                     self.requestPermissions(new String[] { Manifest.permission.CAMERA }, 0);
                 } catch (Exception ex) {
                 }
+            }
+        });
+        mSendView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doSend();
             }
         });
     }
@@ -298,5 +318,178 @@ public class SendActivity extends BaseActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    private void doSend() {
+
+        final class unspentTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibUnspentTransaction>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                ArrayList<String> addrs = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Nullable
+            @Override
+            protected ArrayList<sibUnspentTransaction> doInBackground(Void... params) {
+                try {
+                    return api.getUnspentTransactions(addresses);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibUnspentTransaction> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    try {
+
+                        sibTransaction tx = prepareTransaction(result.toArray(new sibUnspentTransaction[0]));
+                        sendTransaction(tx);
+
+                    } catch (Exception ex) {
+
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
+                super.onCancelled(result);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+            }
+        }
+
+        new unspentTransactionsAsyncTask().execute();
+
+    }
+
+    private sibTransaction prepareTransaction(sibUnspentTransaction[] unspent) throws Exception {
+        Double spent = 0.0;
+        Double amount = Double.valueOf(mAmountView.getText().toString());
+        Double commission = Double.valueOf(mCommissionView.getText().toString());
+
+        sibTransaction tx = new sibTransaction();
+        tx.addOutput(mAddressView.getText().toString(), amount);
+
+        for (sibUnspentTransaction u: unspent) {
+            if (spent < amount + commission) {
+                spent += u.Amount;
+                tx.addInput(u);
+			} else {
+                break;
+            }
+        }
+        tx.addChange(spent - amount - commission);
+        return tx;
+    }
+
+    private void sendTransaction(sibTransaction tx) throws Exception {
+        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
+
+        final SendActivity self = this;
+
+        final class broadcastTransactionAsyncTask extends AsyncTask<int[], Void, sibBroadcastTransactionResult> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected sibBroadcastTransactionResult doInBackground(int[]... params) {
+                try {
+                    return api.broadcastTransaction(params[0]);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBroadcastTransactionResult result) {
+                super.onPostExecute(result);
+                String message = "";
+                if (result.IsBroadcasted) {
+                    message = getResources().getString(R.string.successBroadcasted) + " " + result.TransactionId;
+                } else {
+                    message = result.Message;
+                }
+
+                final String txid = result.TransactionId;
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(self);
+                builder.setTitle(R.string.alertDialogBroadcastTitle)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNeutralButton(R.string.CopyToClipboard,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), txid);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(self);
+                                        builder.setTitle(R.string.alertDialogClipboardTitle)
+                                                .setMessage(R.string.alertDialogClipboardMessage)
+                                                .setCancelable(false)
+                                                .setNegativeButton(R.string.OK,
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();                                    }
+                                })
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+
+            }
+
+            @Override
+            protected void onCancelled(sibBroadcastTransactionResult result) {
+                super.onCancelled(result);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+            }
+        }
+
+        new broadcastTransactionAsyncTask().execute(sign);
     }
 }

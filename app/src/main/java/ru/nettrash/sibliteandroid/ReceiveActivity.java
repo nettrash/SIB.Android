@@ -303,7 +303,7 @@ public class ReceiveActivity extends BaseActivity {
             }
         }
 
-        new qrAsyncTask().execute("sibcoin://"+mAddressView.getText().toString()+(mAmountView.getText().toString() != "" ? "?amount="+mAmountView.getText().toString() : ""));
+        new qrAsyncTask().execute("sibcoin:"+mAddressView.getText().toString()+(mAmountView.getText().toString() != "" ? "?amount="+mAmountView.getText().toString() : ""));
     }
 
     private void refreshInputAddress()  {

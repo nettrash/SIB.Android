@@ -8,6 +8,7 @@
     <string name="titleActivityBalance">Червонец</string>
     <string name="titleActivityReceive">Червонец - Получить</string>
     <string name="titleActivitySend">Червонец - Отправить</string>
+    <string name="titleActivityHistory">Червонец - История</string>
 
     <string name="alertDialogErrorTitle">Ошибка</string>
     <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
@@ -16,8 +17,11 @@
     <string name="alertDialogClipboardTitle">Буфер обмена</string>
     <string name="alertDialogClipboardMessage">Успешно скопировано в буфер обмена.</string>
 
+    <string name="alertDialogBroadcastTitle">Broadcasted</string>
+
     <string name="OK">OK</string>
     <string name="Cancel">Отмена</string>
+    <string name="CopyToClipboard">Скопировать</string>
 
     <string name="textLoading">Инициализация...</string>
 
@@ -46,8 +50,10 @@
 
     <string name="receive">Адрес</string>
     <string name="send">Перевод</string>
+    <string name="history">История</string>
 
     <string name="sibAddress">Червонец: Адрес </string>
+    <string name="sibTransactionId">Червонец: txid</string>
 
     <string name="hintAmount">сумма</string>
     <string name="hintAddress">адрес</string>
@@ -57,4 +63,6 @@
 
     <string name="addressShareDescription">Червонец: Реквизиты пополнения</string>
     <string name="addressShareTitle">Поделиться реквизитами</string>
+
+    <string name="successBroadcasted">Транзакция отправлена в сеть. txid: </string>
 </resources>

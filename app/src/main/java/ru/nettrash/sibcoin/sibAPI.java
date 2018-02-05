@@ -1,8 +1,5 @@
 package ru.nettrash.sibcoin;
 
-import android.app.Service;
-import android.os.AsyncTask;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
@@ -13,25 +10,27 @@ import org.json.JSONObject;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 import ru.nettrash.crypto.MD5;
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
+import ru.nettrash.sibcoin.classes.sibMemPoolItem;
+import ru.nettrash.sibcoin.classes.sibRateItem;
+import ru.nettrash.sibcoin.classes.sibUnspentTransaction;
+import ru.nettrash.sibcoin.models.rootModel;
 import ru.nettrash.util.Arrays;
+
+import static java.lang.Math.pow;
 
 /**
  * Created by nettrash on 26.01.2018.
@@ -132,19 +131,19 @@ public final class sibAPI {
         JSONObject result = resp.getJSONObject("BalanceResult");
         if (result.getBoolean("Success")) {
 
-            return result.getDouble("Value");
+            return result.getDouble("Value") / pow(10, 8);
         } else {
             throw new Exception("Error get balance");
         }
     }
 
     @Nullable
-    public ArrayList<sibHistoryItem> getLastTransaction(String[] addresses) throws Exception {
+    public ArrayList<sibHistoryItem> getLastTransactions(int last, String[] addresses, String[] inputAddresses, String[] changeAddresses) throws Exception {
         String url = urlAPIRoot + "/transactions";
 
         JSONObject postDataParams = new JSONObject();
         postDataParams.put("addresses", new JSONArray(addresses));
-        postDataParams.put("last", 3);
+        postDataParams.put("last", last);
 
         String sResponse = _sendPOST(url, postDataParams.toString());
         JSONObject resp = new JSONObject(sResponse);
@@ -154,9 +153,46 @@ public final class sibAPI {
             ArrayList<sibHistoryItem> retVal = new ArrayList<sibHistoryItem>();
 
             try {
-                JSONArray items = resp.getJSONArray("Items");
+                JSONArray items = result.getJSONArray("Items");
                 for (int idx = 0; idx < items.length(); idx++) {
                     JSONObject obj = items.getJSONObject(idx);
+
+                    retVal.add(new sibHistoryItem(obj, inputAddresses, changeAddresses));
+
+                }
+            } catch (Exception ex) {
+
+            }
+
+            return retVal;
+
+
+        } else {
+            throw new Exception("Error get last ops");
+        }
+    }
+
+    @Nullable
+    public ArrayList<sibMemPoolItem> getMemPoolTransactions(String[] addresses) throws Exception {
+        String url = urlAPIRoot + "/mempool";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("addresses", new JSONArray(addresses));
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("MemoryPoolResult");
+        if (result.getBoolean("Success")) {
+
+            ArrayList<sibMemPoolItem> retVal = new ArrayList<sibMemPoolItem>();
+
+            try {
+                JSONArray items = result.getJSONArray("Items");
+                for (int idx = 0; idx < items.length(); idx++) {
+                    JSONObject obj = items.getJSONObject(idx);
+
+                    retVal.add(new sibMemPoolItem(obj));
+
                 }
             } catch (Exception ex) {
 
@@ -180,5 +216,88 @@ public final class sibAPI {
         JSONObject resp = new JSONObject(sResponse);
         JSONObject result = resp.getJSONObject("InputExistsResult");
         return result.getBoolean("Success") && result.getBoolean("Exists");
+    }
+
+    @Nullable
+    public ArrayList<sibUnspentTransaction> getUnspentTransactions(String[] addresses) throws Exception {
+        String url = urlAPIRoot + "/unspentTransactions";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("addresses", new JSONArray(addresses));
+        postDataParams.put("last", 3);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("UnspentTransactionsResult");
+        if (result.getBoolean("Success")) {
+
+            ArrayList<sibUnspentTransaction> retVal = new ArrayList<sibUnspentTransaction>();
+
+            try {
+                JSONArray items = result.getJSONArray("Items");
+                for (int idx = 0; idx < items.length(); idx++) {
+                    JSONObject obj = items.getJSONObject(idx);
+
+                    retVal.add(new sibUnspentTransaction(obj));
+                }
+            } catch (Exception ex) {
+
+            }
+
+            return retVal;
+
+
+        } else {
+            throw new Exception("Error get unspent");
+        }
+    }
+
+    public sibBroadcastTransactionResult broadcastTransaction(int[] sign) throws Exception {
+        String url = urlAPIRoot + "/broadcastTransaction";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("rawtx", Base64.encodeToString(Arrays.toByteArray(sign), Base64.NO_WRAP));
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("BroadcastTransactionResult");
+        sibBroadcastTransactionResult retVal = new sibBroadcastTransactionResult();
+        retVal.IsBroadcasted = result.getBoolean("Success");
+        if (result.getBoolean("Success")) {
+            retVal.TransactionId = result.getString("TransactionId");
+        } else {
+            retVal.Message = result.getString("Message");
+        }
+        return retVal;
+    }
+
+    public ArrayList<sibRateItem> getRates() throws Exception {
+        String url = urlAPIRoot + "/currentRates";
+
+        String sResponse = _sendPOST(url, "");
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("CurrentRatesResult");
+        if (result.getBoolean("Success")) {
+
+            ArrayList<sibRateItem> retVal = new ArrayList<sibRateItem>();
+
+            try {
+                JSONArray items = result.getJSONArray("Items");
+                for (int idx = 0; idx < items.length(); idx++) {
+                    JSONObject obj = items.getJSONObject(idx);
+
+                    retVal.add(new sibRateItem(obj));
+
+                }
+            } catch (Exception ex) {
+
+            }
+
+            return retVal;
+
+
+        } else {
+            throw new Exception("Error get rates");
+        }
     }
 }

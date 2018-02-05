@@ -104,7 +104,7 @@ public class RootActivity extends BaseActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        //delayedHide(100);
+        delayedHide(100);
 
         sibApplication.initialize();
 
@@ -123,6 +123,12 @@ public class RootActivity extends BaseActivity {
             this.finish();
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        delayedHide(100);
     }
 
     private void toggle() {

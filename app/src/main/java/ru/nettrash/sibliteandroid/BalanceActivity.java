@@ -26,12 +26,15 @@ import java.util.Date;
 import java.util.Map;
 
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
+import ru.nettrash.sibcoin.classes.sibMemPoolItem;
+import ru.nettrash.sibcoin.classes.sibRateItem;
 import ru.nettrash.sibcoin.database.Address;
 import ru.nettrash.sibcoin.sibAPI;
 
 public class BalanceActivity extends BaseActivity {
 
     private int _refreshLastOpsCount = 0;
+    private int LAST_HISTORY_MAX_COUNT = 3;
 
     private int _firstX;
     private int _firstY;
@@ -76,6 +79,9 @@ public class BalanceActivity extends BaseActivity {
     private TextView mLabelNoOps;
     private SwipeRefreshLayout mSwipeRefreshLastOps;
 
+    private ListView mRatesListView;
+    private SwipeRefreshLayout mSwipeRefreshRates;
+
     private Button mSegmentButtonSIB;
     private Button mSegmentButtonRates;
     private Button mSegmentButtonBuy;
@@ -119,10 +125,10 @@ public class BalanceActivity extends BaseActivity {
         }
     };
 
-    private void refreshLastHistory() {
+    private void refreshMemPool() {
         //get last history
 
-        final class lastTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibHistoryItem>> {
+        final class memPoolTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibMemPoolItem>> {
 
             protected sibAPI api = new sibAPI();
             protected String[] addresses = new String[0];
@@ -143,9 +149,107 @@ public class BalanceActivity extends BaseActivity {
             }
 
             @Override
+            protected ArrayList<sibMemPoolItem> doInBackground(Void... params) {
+                try {
+                    return api.getMemPoolTransactions(addresses);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibMemPoolItem> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+                    for (sibMemPoolItem item: result) {
+                        data.add(item.getHashMap());
+                    }
+                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                    mLastHistoryListView.setAdapter(adapter);
+                    mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
+                }
+                _refreshLastOpsCount--;
+                if (_refreshLastOpsCount<=0) {
+                    _refreshLastOpsCount = 0;
+                    mSwipeRefreshLastOps.setRefreshing(false);
+                }
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibMemPoolItem> result) {
+                super.onCancelled(result);
+                _refreshLastOpsCount--;
+                if (_refreshLastOpsCount<=0) {
+                    _refreshLastOpsCount = 0;
+                    mSwipeRefreshLastOps.setRefreshing(false);
+                }
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                _refreshLastOpsCount--;
+                if (_refreshLastOpsCount<=0) {
+                    _refreshLastOpsCount = 0;
+                    mSwipeRefreshLastOps.setRefreshing(false);
+                }
+            }
+        }
+
+        _refreshLastOpsCount++;
+        new memPoolTransactionsAsyncTask().execute();
+    }
+
+    private void refreshLastHistory() {
+        //get last history
+
+        final class lastTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibHistoryItem>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+            protected String[] addressesInput = new String[0];
+            protected String[] addressesChange = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                mBalanceView.setText(R.string.balanceRefreshInProgress);
+                ArrayList<String> addrs = new ArrayList<String>();
+                ArrayList<String> addrsInput = new ArrayList<String>();
+                ArrayList<String> addrsChange = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                        switch (a.getAddressType()) {
+                            case (short) 0: {
+                                addrsInput.add(a.getAddress());
+                                break;
+                            }
+                            case (short) 1: {
+                                addrsChange.add(a.getAddress());
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+                    addressesInput = addrsInput.toArray(new String[0]);
+                    addressesChange = addrsChange.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Override
             protected ArrayList<sibHistoryItem> doInBackground(Void... params) {
                 try {
-                    return api.getLastTransaction(addresses);
+                    return api.getLastTransactions(LAST_HISTORY_MAX_COUNT, addresses, addressesInput, addressesChange);
                 } catch (Exception ex) {
                     this.cancel(true);
                 }
@@ -268,6 +372,58 @@ public class BalanceActivity extends BaseActivity {
         new balanceAsyncTask().execute();
     }
 
+    private void refreshRates() {
+        //get rates
+
+        final class ratesAsyncTask extends AsyncTask<Void, Void, ArrayList<sibRateItem>> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected ArrayList<sibRateItem> doInBackground(Void... params) {
+                try {
+                    return api.getRates();
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibRateItem> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+                    for (sibRateItem item: result) {
+                        data.add(item.getHashMap());
+                    }
+                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.rate_item, sibRateItem.getListAdapterFrom(), sibRateItem.getListAdapterTo());
+                    mRatesListView.setAdapter(adapter);
+                }
+                mSwipeRefreshRates.setRefreshing(false);
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibRateItem> result) {
+                super.onCancelled(result);
+                mSwipeRefreshRates.setRefreshing(false);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                mSwipeRefreshRates.setRefreshing(false);
+            }
+        }
+
+        new ratesAsyncTask().execute();
+    }
+
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -305,12 +461,14 @@ public class BalanceActivity extends BaseActivity {
         mLayoutActionButtonSend = findViewById(R.id.action_layout_send);
         mLayoutActionButtonHistory = findViewById(R.id.action_layout_history);
 
-
         mViewFlipper = findViewById(R.id.view_flipper);
 
         mLastHistoryListView = findViewById(R.id.last_history_view);
         mLabelNoOps = findViewById(R.id.label_no_ops);
         mSwipeRefreshLastOps = findViewById(R.id.last_ops_refresh);
+
+        mRatesListView = findViewById(R.id.rates_view);
+        mSwipeRefreshRates = findViewById(R.id.rates_refresh);
 
         mSegmentButtonSIB = findViewById(R.id.segment_button_sib);
         mSegmentButtonRates = findViewById(R.id.segment_button_rates);
@@ -386,6 +544,29 @@ public class BalanceActivity extends BaseActivity {
             }
         });
 
+        mActionButtonHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float deg = mActionButton.getRotation() + 270F;
+                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
+                if (mImageTap.getVisibility() == View.VISIBLE) {
+                    mImageTap.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
+                    mActionButtonSettings.setVisibility(View.VISIBLE);
+                } else {
+                    mImageTap.setVisibility(View.VISIBLE);
+                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
+                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
+                    mActionButtonSettings.setVisibility(View.INVISIBLE);
+                }
+                Intent intent = new Intent(self, HistoryActivity.class);
+                startActivity(intent);
+            }
+        });
+
         mBalanceView.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 mSwipeRefreshLastOps.setRefreshing(true);
@@ -401,6 +582,15 @@ public class BalanceActivity extends BaseActivity {
                     public void onRefresh() {
                         refreshBalance();
                         refreshLastHistory();
+                    }
+                }
+        );
+
+        mSwipeRefreshRates.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        refreshRates();
                     }
                 }
         );
@@ -480,8 +670,9 @@ public class BalanceActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
-        refreshLastHistory();
+        refreshMemPool();
         refreshBalance();
+        refreshRates();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package ru.nettrash.sibcoin;
 
+import org.jetbrains.annotations.Contract;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -9,6 +11,7 @@ import ru.nettrash.crypto.HMAC;
 import ru.nettrash.crypto.PointFP;
 import ru.nettrash.crypto.SHA256;
 import ru.nettrash.math.BigInteger;
+import ru.nettrash.sibcoin.classes.sibUnspentTransaction;
 import ru.nettrash.sibcoin.database.Address;
 import ru.nettrash.util.Arrays;
 
@@ -51,6 +54,11 @@ public final class sibTransaction {
         addOutput(mChange.Address, amount);
     }
 
+    @Contract(pure = true)
+    public sibWallet getChange() {
+        return mChange;
+    }
+
     private int[] transactionHash(sibTransactionInput input) {
         sibTransaction tx = clone();
         for (sibTransactionInput i: tx.mInput) {
@@ -61,7 +69,7 @@ public final class sibTransaction {
             }
         }
         int[] data = tx.serialize();
-        data = Arrays.append(data, 1);
+        data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(1).array())));
         SHA256 sha256 = new SHA256();
         sha256.update(Arrays.toByteArray(data));
         byte[] hash = sha256.digest();
@@ -218,42 +226,42 @@ public final class sibTransaction {
 
     private int[] toVarIntBytes(long value) {
         if (value < 253) {
-            return Arrays.toUnsignedByteArray(ByteBuffer.allocate(1).putLong(value).array());
+            return Arrays.toUnsignedByteArray(ByteBuffer.allocate(1).put((byte)value).array());
         }
         if (value < 65536) {
             int[] retVal = new int[] { 253 };
-            return Arrays.append(retVal, Arrays.toUnsignedByteArray(ByteBuffer.allocate(2).putLong(value).array()));
+            return Arrays.append(retVal, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(2).putShort((short)value).array())));
         }
         if (value < 4294967296L) {
             int[] retVal = new int[] { 254 };
-            return Arrays.append(retVal, Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putLong(value).array()));
+            return Arrays.append(retVal, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt((int)value).array())));
         }
         int[] retVal = new int[] { 255 };
-        return Arrays.append(retVal, Arrays.toUnsignedByteArray(ByteBuffer.allocate(8).putLong(value).array()));
+        return Arrays.append(retVal, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(8).putLong(value).array())));
     }
 
     public int[] serialize() {
         int[] data = new int[0];
-        data = Arrays.append(data, Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(mVersion).array()));
+        data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(mVersion).array())));
         data = Arrays.append(data, toVarIntBytes(mInput.size()));
         for (sibTransactionInput i: mInput) {
             data = Arrays.append(data, Arrays.toUnsignedByteArray(Arrays.reverse(Arrays.hexStringToByteArray(i.Outpoint.Hash))));
-            data = Arrays.append(data, Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(i.Outpoint.Index).array()));
+            data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(i.Outpoint.Index).array())));
             data = Arrays.append(data, toVarIntBytes(i.Script.length));
             if (i.Script.length > 0) {
                 data = Arrays.append(data, i.Script);
             }
-            data = Arrays.append(data, Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putLong(i.Sequence).array()));
+            data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(i.Sequence.intValue()).array())));
         }
         data = Arrays.append(data, toVarIntBytes(mOutput.size()));
         for (sibTransactionOutput o: mOutput) {
-            data = Arrays.append(data, Arrays.toUnsignedByteArray(ByteBuffer.allocate(8).putLong(o.Satoshi).array()));
+            data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(8).putLong(o.Satoshi).array())));
             data = Arrays.append(data, toVarIntBytes(o.ScriptedAddress.length));
             if (o.ScriptedAddress.length > 0) {
                 data = Arrays.append(data, o.ScriptedAddress);
             }
         }
-        data = Arrays.append(data, Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(mLockTime).array()));
+        data = Arrays.append(data, Arrays.reverse(Arrays.toUnsignedByteArray(ByteBuffer.allocate(4).putInt(mLockTime).array())));
         return data;
     }
 
@@ -265,14 +273,18 @@ public final class sibTransaction {
         for (sibTransactionInput i: this.mInput) {
             retVal.mInput.add(new sibTransactionInput(i.Outpoint.Address, i.Outpoint.Hash, i.Outpoint.Index, i.Script, this.mLockTime));
         }
-        retVal.mOutput = new ArrayList<sibTransactionOutput>();
-        for (sibTransactionOutput o: this.mOutput) {
-            retVal.mOutput.add(new sibTransactionOutput(o.ScriptedAddress, o.Amount, o.Satoshi));
+        if (this.mOutput != null) {
+            retVal.mOutput = new ArrayList<sibTransactionOutput>();
+            for (sibTransactionOutput o : this.mOutput) {
+                retVal.mOutput.add(new sibTransactionOutput(o.ScriptedAddress, o.Amount, o.Satoshi));
+            }
         }
         retVal.mTimestamp = this.mTimestamp;
         retVal.mBlock = this.mBlock;
         retVal.mChange.Address = this.mChange.Address;
-        retVal.mChange.PrivateKey = this.mChange.PrivateKey.clone();
+        if (this.mChange.PrivateKey != null)
+            retVal.mChange.PrivateKey = this.mChange.PrivateKey.clone();
+        if (this.mChange.PublicKey != null)
         retVal.mChange.PublicKey = this.mChange.PublicKey.clone();
         retVal.mChange.WIF = this.mChange.WIF;
         return retVal;

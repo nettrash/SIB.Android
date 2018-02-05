@@ -120,7 +120,7 @@ public final class BigInteger {
 
         for (int i = 0; i < number.length(); i++)
         {
-            String str = number.substring(i, 1);
+            String str = String.valueOf(number.charAt(i));
             int x = Integer.valueOf(str);
             w = w * 10 + x;
             j = j + 1;
@@ -385,7 +385,7 @@ public final class BigInteger {
             }
         }
         if (k>0) {
-            return Arrays.copyOfRange(retVal, 0, k+1);
+            return Arrays.copyOfRange(retVal, 0, k);
         }
         return new int[0];
     }
@@ -397,7 +397,7 @@ public final class BigInteger {
             return new int[0];
         }
         if (ba[0] == 0) {
-            ba = Arrays.copyOfRange(ba, 1, ba.length - 1);
+            ba = Arrays.copyOfRange(ba, 1, ba.length);
         }
         for (int idx = 0; idx < ba.length; idx++) {
             if (ba[idx] < 0) {

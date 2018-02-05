@@ -88,7 +88,7 @@ public final class Arrays {
     public static int[] reverse(int[] source) {
         int[] retVal = new int[source.length];
         for (int i=source.length-1; i>=0; i--) {
-            retVal[i] = source[i];
+            retVal[source.length-1-i] = source[i];
         }
         return retVal;
     }
@@ -109,6 +109,20 @@ public final class Arrays {
         } else {
             return source;
         }
+    }
+
+    public static boolean contains(String[] array, String item) {
+        for (String s: array) {
+            if (s.equals(item)) return true;
+        }
+        return false;
+    }
+
+    public static boolean containsIgnoreCase(String[] array, String item) {
+        for (String s: array) {
+            if (s.equalsIgnoreCase(item)) return true;
+        }
+        return false;
     }
 }
 
