@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -330,6 +332,8 @@ public class SendActivity extends BaseActivity {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
+
+                findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE );
                 ArrayList<String> addrs = new ArrayList<String>();
                 try {
 
@@ -365,7 +369,7 @@ public class SendActivity extends BaseActivity {
                         sendTransaction(tx);
 
                     } catch (Exception ex) {
-
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
                     }
                 }
             }
@@ -373,13 +377,17 @@ public class SendActivity extends BaseActivity {
             @Override
             protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
                 super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
             }
         }
+
+        hideKeyboard();
 
         new unspentTransactionsAsyncTask().execute();
 
@@ -442,6 +450,8 @@ public class SendActivity extends BaseActivity {
 
                 final String txid = result.TransactionId;
 
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(self);
                 builder.setTitle(R.string.alertDialogBroadcastTitle)
                         .setMessage(message)
@@ -463,6 +473,8 @@ public class SendActivity extends BaseActivity {
                                                         new DialogInterface.OnClickListener() {
                                                             public void onClick(DialogInterface dialog, int id) {
                                                                 dialog.cancel();
+
+                                                                self.finish();
                                                             }
                                                         });
                                         AlertDialog alert = builder.create();
@@ -472,21 +484,24 @@ public class SendActivity extends BaseActivity {
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.cancel();
+
+                                        self.finish();
                                     }
                                 });
                 AlertDialog alert = builder.create();
                 alert.show();
-
             }
 
             @Override
             protected void onCancelled(sibBroadcastTransactionResult result) {
                 super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
             }
         }
 

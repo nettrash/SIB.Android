@@ -9,6 +9,7 @@
     <string name="titleActivityReceive">Червонец - Получить</string>
     <string name="titleActivitySend">Червонец - Отправить</string>
     <string name="titleActivityHistory">Червонец - История</string>
+    <string name="titleActivitySettings">Червонец - Настройки</string>
 
     <string name="alertDialogErrorTitle">Ошибка</string>
     <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
@@ -64,5 +65,19 @@
     <string name="addressShareDescription">Червонец: Реквизиты пополнения</string>
     <string name="addressShareTitle">Поделиться реквизитами</string>
 
+    <string name="keysShareTitle">Червонец: Хранилище ключей</string>
+
     <string name="successBroadcasted">Транзакция отправлена в сеть. txid: </string>
+
+    <string name="textWorking">Работаю...</string>
+
+    <string name="commingSoon">в работе</string>
+
+    <string name="settings">Настройки</string>
+    <string name="savekeys">Выгрузить ключи</string>
+    <string name="loadkeys">Загрузить ключи</string>
+
+    <string name="dialogPasswordTitle">Установить пароль</string>
+    <string name="dialogPasswordMessage">Введите пароль (мы рекомендуем максимально сложный)</string>
+
 </resources>

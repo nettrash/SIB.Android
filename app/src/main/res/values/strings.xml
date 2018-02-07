@@ -9,6 +9,7 @@
     <string name="titleActivityReceive">SIBCoin - receive</string>
     <string name="titleActivitySend">SIBCoin - send</string>
     <string name="titleActivityHistory">SIBCoin - history</string>
+    <string name="titleActivitySettings">SIBCoin - settings</string>
 
     <string name="alertDialogErrorTitle">Error</string>
     <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
@@ -64,5 +65,18 @@
     <string name="addressShareDescription">SIBCoin Requisites</string>
     <string name="addressShareTitle">Share Requisites</string>
 
+    <string name="keysShareTitle">SIBCoin: Keystore</string>
+
     <string name="successBroadcasted">Transaction sent to network. txid: </string>
+
+    <string name="textWorking">Working...</string>
+
+    <string name="commingSoon">coming</string>
+
+    <string name="settings">Settings</string>
+    <string name="savekeys">Save keys</string>
+    <string name="loadkeys">Load keys</string>
+
+    <string name="dialogPasswordTitle">Set password</string>
+    <string name="dialogPasswordMessage">Enter password (please enter a strong password)</string>
 </resources>

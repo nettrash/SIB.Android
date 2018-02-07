@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -214,8 +215,8 @@ public class ReceiveActivity extends BaseActivity {
                     File cachePath = new File(root.getAbsolutePath() + "/DCIM/Camera/sibQR_"+mAddressView.getText().toString()+".jpg");
                     try
                     {
-                        root.createNewFile();
-                        FileOutputStream ostream = new FileOutputStream(root);
+                        cachePath.createNewFile();
+                        FileOutputStream ostream = new FileOutputStream(cachePath);
                         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, ostream);
                         ostream.close();
                     }
@@ -225,7 +226,7 @@ public class ReceiveActivity extends BaseActivity {
                     }
 
                     Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    Uri phototUri = Uri.parse("/DCIM/Camera/sibQR_"+mAddressView.getText().toString()+".jpg");
+                    Uri phototUri = Uri.parse(cachePath.getAbsolutePath());
                     shareIntent.setData(phototUri);
                     shareIntent.setType("image/*");
                     shareIntent.putExtra(Intent.EXTRA_STREAM, phototUri);
@@ -316,6 +317,7 @@ public class ReceiveActivity extends BaseActivity {
                 super.onPreExecute();
             }
 
+            @Nullable
             @Override
             protected Boolean doInBackground(String... params) {
                 try {

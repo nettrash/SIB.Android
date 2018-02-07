@@ -77,6 +77,12 @@
             android:label="@string/titleActivityHistory"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".SettingsActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/titleActivitySettings"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme"></activity>
     </application>
 
 </manifest>

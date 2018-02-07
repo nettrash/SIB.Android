@@ -176,7 +176,7 @@
                         android:layout_height="match_parent"
                         android:textSize="32pt"
                         android:textColor="@color/colorWhite"
-                        android:text="Buy"
+                        android:text="@string/commingSoon"
                         android:textAlignment="center"/>
                 </LinearLayout>
                 <LinearLayout
@@ -187,7 +187,7 @@
                         android:layout_height="match_parent"
                         android:textSize="32pt"
                         android:textColor="@color/colorWhite"
-                        android:text="Sell"
+                        android:text="@string/commingSoon"
                         android:textAlignment="center"/>
                 </LinearLayout>
 
@@ -220,6 +220,7 @@
                     android:src="@drawable/actionbuttonreceive"/>
 
                 <TextView
+                    android:id="@+id/button_receive_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -248,6 +249,7 @@
                     android:src="@drawable/actionbuttonsend"/>
 
                 <TextView
+                    android:id="@+id/button_send_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -276,6 +278,7 @@
                     android:src="@drawable/actionbuttonhistory"/>
 
                 <TextView
+                    android:id="@+id/button_history_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"

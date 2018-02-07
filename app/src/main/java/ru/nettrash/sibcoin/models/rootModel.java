@@ -34,7 +34,11 @@ public final class rootModel extends baseModel {
         return database.addressDao().count() == 0;
     }
 
-    public void storeWallet(sibWallet wallet, short nWalletType) {
+    public void storeWallet(sibWallet wallet, short nWalletType) throws Exception {
+        for (Address a: getAddresses()) {
+            if (a.getAddress().equals(wallet.Address))
+                return;
+        }
         Address address = new Address();
         address.setAddress(wallet.Address);
         address.setAddressType(nWalletType);

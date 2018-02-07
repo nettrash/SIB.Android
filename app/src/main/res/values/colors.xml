@@ -13,4 +13,6 @@
     <color name="colorTextEditorBackground">#88FFFFFF</color>
     <color name="colorButtonBackground">#19000000</color>
     <color name="colorHistoryBackgroud">#66000000</color>
+
+    <color name="colorWaitBackground">#88000000</color>
 </resources>

@@ -23,6 +23,7 @@ import android.widget.ViewFlipper;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
@@ -67,6 +68,9 @@ public class BalanceActivity extends BaseActivity {
     private ImageButton mActionButtonReceive;
     private ImageButton mActionButtonSend;
     private ImageButton mActionButtonHistory;
+    private TextView mActionButtonReceiveText;
+    private TextView mActionButtonSendText;
+    private TextView mActionButtonHistoryText;
     private ImageButton mActionButtonSettings;
     private LinearLayout mLayoutActionButtonReceive;
     private LinearLayout mLayoutActionButtonSend;
@@ -136,7 +140,7 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                mBalanceView.setText(R.string.balanceRefreshInProgress);
+                mSwipeRefreshLastOps.setRefreshing(true);
                 ArrayList<String> addrs = new ArrayList<String>();
                 try {
                     for (Address a : sibApplication.model.getAddresses()) {
@@ -166,9 +170,13 @@ public class BalanceActivity extends BaseActivity {
                     for (sibMemPoolItem item: result) {
                         data.add(item.getHashMap());
                     }
-                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
-                    mLastHistoryListView.setAdapter(adapter);
-                    mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
+                    if (data.size() < LAST_HISTORY_MAX_COUNT) {
+                        refreshLastHistory(data);
+                    } else {
+                        SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                        mLastHistoryListView.setAdapter(adapter);
+                        mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
+                    }
                 }
                 _refreshLastOpsCount--;
                 if (_refreshLastOpsCount<=0) {
@@ -202,7 +210,7 @@ public class BalanceActivity extends BaseActivity {
         new memPoolTransactionsAsyncTask().execute();
     }
 
-    private void refreshLastHistory() {
+    private void refreshLastHistory(ArrayList<Map<String, Object>> memPool) {
         //get last history
 
         final class lastTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibHistoryItem>> {
@@ -211,11 +219,12 @@ public class BalanceActivity extends BaseActivity {
             protected String[] addresses = new String[0];
             protected String[] addressesInput = new String[0];
             protected String[] addressesChange = new String[0];
+            public ArrayList<Map<String, Object>> memPoolData = null;
 
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                mBalanceView.setText(R.string.balanceRefreshInProgress);
+                mSwipeRefreshLastOps.setRefreshing(true);
                 ArrayList<String> addrs = new ArrayList<String>();
                 ArrayList<String> addrsInput = new ArrayList<String>();
                 ArrayList<String> addrsChange = new ArrayList<String>();
@@ -249,7 +258,7 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected ArrayList<sibHistoryItem> doInBackground(Void... params) {
                 try {
-                    return api.getLastTransactions(LAST_HISTORY_MAX_COUNT, addresses, addressesInput, addressesChange);
+                    return api.getLastTransactions(LAST_HISTORY_MAX_COUNT-memPoolData.size(), addresses, addressesInput, addressesChange);
                 } catch (Exception ex) {
                     this.cancel(true);
                 }
@@ -260,11 +269,13 @@ public class BalanceActivity extends BaseActivity {
             protected void onPostExecute(ArrayList<sibHistoryItem> result) {
                 super.onPostExecute(result);
                 if (result != null) {
-                    ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-                    for (sibHistoryItem item: result) {
-                        data.add(item.getHashMap());
+                    if (memPoolData == null) {
+                        memPoolData = new ArrayList<Map<String, Object>>();
                     }
-                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                    for (sibHistoryItem item: result) {
+                        memPoolData.add(item.getHashMap());
+                    }
+                    SimpleAdapter adapter = new SimpleAdapter(self, memPoolData, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
                     mLastHistoryListView.setAdapter(adapter);
                     mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
                 }
@@ -297,7 +308,9 @@ public class BalanceActivity extends BaseActivity {
         }
 
         _refreshLastOpsCount++;
-        new lastTransactionsAsyncTask().execute();
+        lastTransactionsAsyncTask task = new lastTransactionsAsyncTask();
+        task.memPoolData = memPool;
+        task.execute();
     }
 
     private void refreshBalance()  {
@@ -454,6 +467,9 @@ public class BalanceActivity extends BaseActivity {
         mActionButtonReceive = findViewById(R.id.button_receive);
         mActionButtonSend = findViewById(R.id.button_send);
         mActionButtonHistory = findViewById(R.id.button_history);
+        mActionButtonReceiveText = findViewById(R.id.button_receive_text);
+        mActionButtonSendText = findViewById(R.id.button_send_text);
+        mActionButtonHistoryText = findViewById(R.id.button_history_text);
         mActionButtonSettings = findViewById(R.id.button_settings);
         mImageTap = findViewById(R.id.image_tap);
 
@@ -480,89 +496,57 @@ public class BalanceActivity extends BaseActivity {
         mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float deg = mActionButton.getRotation() + 270F;
-                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
-                if (mImageTap.getVisibility() == View.VISIBLE) {
-                    mImageTap.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
-                    mActionButtonSettings.setVisibility(View.VISIBLE);
-                } else {
-                    mImageTap.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
-                    mActionButtonSettings.setVisibility(View.INVISIBLE);
-                }
+                actionAnimation();
             }
         });
 
         mActionButtonReceive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float deg = mActionButton.getRotation() + 270F;
-                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
-                if (mImageTap.getVisibility() == View.VISIBLE) {
-                    mImageTap.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
-                    mActionButtonSettings.setVisibility(View.VISIBLE);
-                } else {
-                    mImageTap.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
-                    mActionButtonSettings.setVisibility(View.INVISIBLE);
-                }
-                Intent intent = new Intent(self, ReceiveActivity.class);
-                startActivity(intent);
+                doReceive();
+            }
+        });
+
+        mActionButtonReceiveText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doReceive();
             }
         });
 
         mActionButtonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float deg = mActionButton.getRotation() + 270F;
-                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
-                if (mImageTap.getVisibility() == View.VISIBLE) {
-                    mImageTap.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
-                    mActionButtonSettings.setVisibility(View.VISIBLE);
-                } else {
-                    mImageTap.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
-                    mActionButtonSettings.setVisibility(View.INVISIBLE);
-                }
-                Intent intent = new Intent(self, SendActivity.class);
-                startActivity(intent);
+                doSend();
+            }
+        });
+
+        mActionButtonSendText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doSend();
             }
         });
 
         mActionButtonHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float deg = mActionButton.getRotation() + 270F;
-                mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
-                if (mImageTap.getVisibility() == View.VISIBLE) {
-                    mImageTap.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
-                    mActionButtonSettings.setVisibility(View.VISIBLE);
-                } else {
-                    mImageTap.setVisibility(View.VISIBLE);
-                    mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
-                    mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
-                    mActionButtonSettings.setVisibility(View.INVISIBLE);
-                }
-                Intent intent = new Intent(self, HistoryActivity.class);
+                doHistory();
+            }
+        });
+
+        mActionButtonHistoryText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doHistory();
+            }
+        });
+
+        mActionButtonSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionAnimation();
+                Intent intent = new Intent(self, SettingsActivity.class);
                 startActivity(intent);
             }
         });
@@ -570,8 +554,7 @@ public class BalanceActivity extends BaseActivity {
         mBalanceView.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 mSwipeRefreshLastOps.setRefreshing(true);
-                refreshBalance();
-                refreshLastHistory();
+                doRefresh();
                 return true;
             }
         });
@@ -580,8 +563,7 @@ public class BalanceActivity extends BaseActivity {
                 new SwipeRefreshLayout.OnRefreshListener() {
                     @Override
                     public void onRefresh() {
-                        refreshBalance();
-                        refreshLastHistory();
+                        doRefresh();
                     }
                 }
         );
@@ -630,6 +612,47 @@ public class BalanceActivity extends BaseActivity {
 
     }
 
+    private void doRefresh() {
+        refreshBalance();
+        refreshMemPool();
+    }
+
+    private void actionAnimation() {
+        float deg = mActionButton.getRotation() + 270F;
+        mActionButton.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
+        if (mImageTap.getVisibility() == View.VISIBLE) {
+            mImageTap.setVisibility(View.INVISIBLE);
+            mLayoutActionButtonReceive.setVisibility(View.VISIBLE);
+            mLayoutActionButtonSend.setVisibility(View.VISIBLE);
+            mLayoutActionButtonHistory.setVisibility(View.VISIBLE);
+            mActionButtonSettings.setVisibility(View.VISIBLE);
+        } else {
+            mImageTap.setVisibility(View.VISIBLE);
+            mLayoutActionButtonReceive.setVisibility(View.INVISIBLE);
+            mLayoutActionButtonSend.setVisibility(View.INVISIBLE);
+            mLayoutActionButtonHistory.setVisibility(View.INVISIBLE);
+            mActionButtonSettings.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void doReceive() {
+        actionAnimation();
+        Intent intent = new Intent(self, ReceiveActivity.class);
+        startActivity(intent);
+    }
+
+    private void doSend() {
+        actionAnimation();
+        Intent intent = new Intent(self, SendActivity.class);
+        startActivity(intent);
+    }
+
+    private void doHistory() {
+        actionAnimation();
+        Intent intent = new Intent(self, HistoryActivity.class);
+        startActivity(intent);
+    }
+
     public void segmentButtonClick(View view) {
         int nOldSelectedSegment = mSelectedSegment;
         int nNewSelectedSegment = nOldSelectedSegment;
@@ -670,8 +693,7 @@ public class BalanceActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
-        refreshMemPool();
-        refreshBalance();
+        doRefresh();
         refreshRates();
     }
 
@@ -679,6 +701,7 @@ public class BalanceActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         delayedHide(100);
+        doRefresh();
     }
 
     private void deselectAllSegments() {
@@ -723,7 +746,7 @@ public class BalanceActivity extends BaseActivity {
     }
 
     private void hide() {
-        // Hide UI first
+        //Hide UI first
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.hide();

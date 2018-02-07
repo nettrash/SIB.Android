@@ -17,7 +17,7 @@ import ru.nettrash.sibliteandroid.R;
  * Created by nettrash on 24.01.2018.
  */
 
-public final class sibHistoryItem {
+public final class sibHistoryItem extends sibTransactionListItem {
 
     public String txId;
     public short txType;
@@ -73,6 +73,7 @@ public final class sibHistoryItem {
         this.Address = outAddressExt == "" ? outAddressIn : outAddressExt;
     }
 
+    @Override
     public HashMap<String, Object> getHashMap() {
         HashMap retVal = new HashMap<String, Object>();
         retVal.put("amount", (txType==0 ? "+ " : "- ")+String.format("%.2f", Amount));
