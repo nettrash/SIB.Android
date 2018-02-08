@@ -18,7 +18,13 @@
     <string name="alertDialogClipboardTitle">Буфер обмена</string>
     <string name="alertDialogClipboardMessage">Успешно скопировано в буфер обмена.</string>
 
-    <string name="alertDialogBroadcastTitle">Broadcasted</string>
+    <string name="alertDialogBroadcastTitle">Отправлено</string>
+    <string name="alertDialogMessageTitle">Сообщение</string>
+
+    <string name="alertKeyStoreLoadedMessage">Хранилище ключей загружено!</string>
+    <string name="keystoreSaved">Хранилище ключей сохранено в файле</string>
+    <string name="keystoreLoadErrorUnsupportedVersion">Версия этого хранилища ключей не поддерживается.</string>
+    <string name="keystoreLoadErrorInvalidPassword">Пароль не от этого хранилища ключей.</string>
 
     <string name="OK">OK</string>
     <string name="Cancel">Отмена</string>

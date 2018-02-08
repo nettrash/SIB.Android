@@ -19,6 +19,12 @@
     <string name="alertDialogClipboardMessage">Copied to clipboard.</string>
 
     <string name="alertDialogBroadcastTitle">Broadcasted</string>
+    <string name="alertDialogMessageTitle">Message</string>
+
+    <string name="alertKeyStoreLoadedMessage">Keystore loaded!</string>
+    <string name="keystoreSaved">Keystore file saved to</string>
+    <string name="keystoreLoadErrorUnsupportedVersion">Unsupported keystore version</string>
+    <string name="keystoreLoadErrorInvalidPassword">Invalid keystore password</string>
 
     <string name="OK">OK</string>
     <string name="Cancel">Cancel</string>

@@ -1,7 +1,9 @@
 package ru.nettrash.sibliteandroid;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.FragmentManager;
@@ -63,5 +65,35 @@ class BaseActivity extends Activity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
+    }
+
+    protected void showError(Exception ex) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.alertDialogErrorTitle)
+                .setMessage(ex.getLocalizedMessage())
+                .setCancelable(false)
+                .setNegativeButton(R.string.OK,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    protected void showMessage(String sMessage) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.alertDialogMessageTitle)
+                .setMessage(sMessage)
+                .setCancelable(false)
+                .setNegativeButton(R.string.OK,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

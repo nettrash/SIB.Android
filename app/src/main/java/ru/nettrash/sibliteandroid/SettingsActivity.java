@@ -322,46 +322,33 @@ public class SettingsActivity extends BaseActivity {
                                 keyData.put("hash", b64Hash);
                                 keyData.put("keys", new JSONArray(v));
 
+                                Uri keysUri = null;
+                                String sPath = "";
                                 //save to file and share
                                 try
                                 {
                                     File root = Environment.getExternalStorageDirectory();
                                     File cachePath = new File(root.getAbsolutePath() + "/Download/keys.sib");
+                                    sPath = cachePath.getPath();
 
                                     cachePath.createNewFile();
                                     FileOutputStream ostream = new FileOutputStream(cachePath);
                                     OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
                                     outputStreamWriter.write(keyData.toString());
                                     outputStreamWriter.close();
-                                    ostream.close();
 
+                                    keysUri = Uri.parse(cachePath.getAbsolutePath());
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     throw e;
                                 }
 
-                                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                                Uri keysUri = Uri.parse(SettingsActivity.this.getFileStreamPath("keys.sib").getCanonicalPath());
-                                shareIntent.setData(keysUri);
-                                shareIntent.setType("*/*");
-                                shareIntent.putExtra(Intent.EXTRA_STREAM, keysUri);
-                                startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.keysShareTitle)), REQUEST_CODE_SHARE);
+                                showMessage(getResources().getString(R.string.keystoreSaved) + " " + "/Download/keys.sib");
 
+                                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
                             } catch (Exception ex) {
                                 findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
-
-                                AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-                                builder.setTitle(R.string.alertDialogErrorTitle)
-                                        .setMessage(ex.getLocalizedMessage())
-                                        .setCancelable(false)
-                                        .setNegativeButton(R.string.OK,
-                                                new DialogInterface.OnClickListener() {
-                                                    public void onClick(DialogInterface dialog, int id) {
-                                                        dialog.cancel();
-                                                    }
-                                                });
-                                AlertDialog alert = builder.create();
-                                alert.show();
+                                showError(ex);
                             }
                         }
                     }
@@ -411,6 +398,9 @@ public class SettingsActivity extends BaseActivity {
                                 inputStream.close();
                                 JSONObject keysData = new JSONObject(stringBuilder.toString());
                                 String version = keysData.getString("version");
+                                if (!version.equals("1.1")) {
+                                    throw new Exception(getResources().getString(R.string.keystoreLoadErrorUnsupportedVersion));
+                                }
                                 String hash = keysData.getString("hash");
                                 JSONArray keys = keysData.getJSONArray("keys");
                                 String hs = "";
@@ -423,7 +413,7 @@ public class SettingsActivity extends BaseActivity {
                                 byte[] bhash = sha256.digest();
                                 String b64Hash = Base64.encodeToString(bhash, Base64.NO_WRAP);
                                 if (!b64Hash.equals(hash))
-                                    throw new Exception("Invalid password");
+                                    throw new Exception(getResources().getString(R.string.keystoreLoadErrorInvalidPassword));
 
                                 for (int idx=0; idx < keys.length(); idx++) {
                                     String keyinfo = keys.getString(idx);
@@ -451,8 +441,11 @@ public class SettingsActivity extends BaseActivity {
                                     sibApplication.model.storeWallet(new sibWallet(privateKey), keyType);
                                 }
                             } catch (Exception ex) {
-
+                                showError(ex);
+                                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                                return;
                             }
+                            showMessage(getResources().getString(R.string.alertKeyStoreLoadedMessage));
                         }
                         findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
                     }
