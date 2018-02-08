@@ -86,4 +86,6 @@
     <string name="dialogPasswordTitle">Установить пароль</string>
     <string name="dialogPasswordMessage">Введите пароль (мы рекомендуем максимально сложный)</string>
 
+    <string name="historyItemDetails">Показать детали</string>
+    <string name="historyItemCopy">Скопировать в буфер обмена</string>
 </resources>

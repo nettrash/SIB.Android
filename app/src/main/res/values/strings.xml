@@ -85,4 +85,7 @@
 
     <string name="dialogPasswordTitle">Set password</string>
     <string name="dialogPasswordMessage">Enter password (please enter a strong password)</string>
+
+    <string name="historyItemDetails">Show Details</string>
+    <string name="historyItemCopy">Copy to clipboard</string>
 </resources>

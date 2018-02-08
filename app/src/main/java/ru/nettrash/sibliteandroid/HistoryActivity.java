@@ -4,19 +4,28 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -53,6 +62,7 @@ public class HistoryActivity extends BaseActivity {
     private View mContentView;
     private ListView mHistoryListView;
     private SwipeRefreshLayout mSwipeRefreshHistory;
+    private ArrayList<sibHistoryItem> mHistory;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -116,6 +126,8 @@ public class HistoryActivity extends BaseActivity {
         mContentView = findViewById(R.id.fullscreen_content);
 
         mHistoryListView = findViewById(R.id.history_view);
+        mHistoryListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        registerForContextMenu(mHistoryListView);
         mSwipeRefreshHistory = findViewById(R.id.history_refresh);
 
 
@@ -139,6 +151,53 @@ public class HistoryActivity extends BaseActivity {
         // are available.
         delayedHide(100);
         refreshHistory();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        delayedHide(100);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.history_list, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        String txId = mHistory.get(info.position).txId;
+        switch (item.getItemId()) {
+            case R.id.historyItemMenuDetails:
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://chain.sibcoin.net/tx/" + txId));
+                startActivity(browserIntent);
+                return true;
+            case R.id.historyItemMenuCopy:
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), txId);
+                clipboard.setPrimaryClip(clip);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(HistoryActivity.this);
+                builder.setTitle(R.string.alertDialogClipboardTitle)
+                        .setMessage(R.string.alertDialogClipboardMessage)
+                        .setCancelable(false)
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        delayedHide(100);
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     private void toggle() {
@@ -244,6 +303,7 @@ public class HistoryActivity extends BaseActivity {
             protected void onPostExecute(ArrayList<sibHistoryItem> result) {
                 super.onPostExecute(result);
                 if (result != null) {
+                    HistoryActivity.this.mHistory = result;
                     ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
                     for (sibHistoryItem item: result) {
                         data.add(item.getHashMap());
