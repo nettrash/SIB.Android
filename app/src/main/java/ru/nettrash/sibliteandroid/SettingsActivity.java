@@ -197,6 +197,8 @@ public class SettingsActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
+        Variables.MAX_INACTIVE_SECONDS = 600;
+
         super.onResume();
         delayedHide(100);
     }

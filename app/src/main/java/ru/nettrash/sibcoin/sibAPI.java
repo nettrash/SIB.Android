@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 import ru.nettrash.crypto.MD5;
+import ru.nettrash.sibcoin.classes.sibBuyState;
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
 import ru.nettrash.sibcoin.classes.sibMemPoolItem;
 import ru.nettrash.sibcoin.classes.sibRateItem;
@@ -300,4 +301,107 @@ public final class sibAPI {
             throw new Exception("Error get rates");
         }
     }
+
+    @Contract(pure = true)
+    public double getSellRate(String currency) throws Exception {
+        String url = urlAPIRoot + "/sellRate";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("currency", currency);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("SellRateResult");
+
+        if (result.getBoolean("Success")) {
+            return result.getDouble("Rate");
+        } else {
+            throw new Exception("Error get sell rate");
+        }
+    }
+
+    @Contract(pure = true)
+    public String processSell(String currency, Double amountSIB, Double amount, String pan) throws Exception {
+        String url = urlAPIRoot + "/registerSell";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("pan", pan);
+        postDataParams.put("amountSIB", amountSIB);
+        postDataParams.put("amount", amount);
+        postDataParams.put("currency", currency);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("RegisterSellResult");
+
+        if (result.getBoolean("Success")) {
+            return result.getString("Address");
+        } else {
+            throw new Exception("Error process sell");
+        }
+    }
+
+    @Contract(pure = true)
+    public double getBuyRate(String currency) throws Exception {
+        String url = urlAPIRoot + "/buyRate";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("currency", currency);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("BuyRateResult");
+
+        if (result.getBoolean("Success")) {
+            return result.getDouble("Rate");
+        } else {
+            throw new Exception("Error get buy rate");
+        }
+    }
+
+    @NonNull
+    @Contract(pure = true)
+    public sibBuyState processBuy(String currency, Double amountSIB, Double amount, String pan, String exp, String cvv, String account, String address) throws Exception {
+        String url = urlAPIRoot + "/registerBuy";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("account", account);
+        postDataParams.put("pan", pan);
+        postDataParams.put("exp", exp);
+        postDataParams.put("cvv", cvv);
+        postDataParams.put("amountSIB", amountSIB);
+        postDataParams.put("amount", amount);
+        postDataParams.put("currency", currency);
+        postDataParams.put("address", address);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("RegisterBuyResult");
+
+        if (result.getBoolean("Success")) {
+            return new sibBuyState(result.getString("State"), result.getString("RedirectUrl"));
+        } else {
+            throw new Exception("Error process buy");
+        }
+    }
+
+    @NonNull
+    @Contract(pure = true)
+    public sibBuyState checkOperation(String opKey) throws Exception {
+        String url = urlAPIRoot + "/checkOp";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("OpKey", opKey);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("CheckOpResult");
+
+        if (result.getBoolean("Success")) {
+            return new sibBuyState(result.getString("State"), "");
+        } else {
+            throw new Exception("Error process buy");
+        }
+    }
 }
+

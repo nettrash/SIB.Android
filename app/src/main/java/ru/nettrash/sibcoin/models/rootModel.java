@@ -19,6 +19,9 @@ public final class rootModel extends baseModel {
 
     private SIBDatabase database;
     private Double balance;
+    private Double sellRate;
+    private Double buyRate;
+    private String buyOpKey;
 
     private void _init(Context context) {
         database = SIBDatabase.getSIBDatabase(context);
@@ -51,6 +54,8 @@ public final class rootModel extends baseModel {
 
     public List<Address> getAddresses() throws Exception { return database.addressDao().getAll(); }
 
+    public List<Address> getAddressesForInput() throws Exception { return database.addressDao().findOnlyIncoming(); }
+
     public Address getAddressForInput() throws Exception {
         List<Address> incoming = database.addressDao().findOnlyIncoming();
         Address[] addresses = incoming.toArray(new Address[0]);
@@ -61,5 +66,20 @@ public final class rootModel extends baseModel {
 
     @Contract(pure = true)
     public Double getBalance() { return balance; }
+
+    public void setSellRate(Double value) { sellRate = value; }
+
+    @Contract(pure = true)
+    public Double getSellRate() { return sellRate; }
+
+    public void setBuyRate(Double value) { buyRate = value; }
+
+    @Contract(pure = true)
+    public Double getBuyRate() { return buyRate; }
+
+    @Contract(pure = true)
+    public String getBuyOpKey() { return buyOpKey; }
+
+    public void setBuyOpKey(String value) { buyOpKey = value; }
 
 }

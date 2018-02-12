@@ -2,17 +2,30 @@ package ru.nettrash.sibliteandroid;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,18 +34,30 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import io.card.payment.CardIOActivity;
+import io.card.payment.CreditCard;
+import ru.nettrash.sibcoin.classes.sibBuyState;
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
 import ru.nettrash.sibcoin.classes.sibMemPoolItem;
 import ru.nettrash.sibcoin.classes.sibRateItem;
+import ru.nettrash.sibcoin.classes.sibUnspentTransaction;
 import ru.nettrash.sibcoin.database.Address;
 import ru.nettrash.sibcoin.sibAPI;
+import ru.nettrash.sibcoin.sibBroadcastTransactionResult;
+import ru.nettrash.sibcoin.sibTransaction;
 
 public class BalanceActivity extends BaseActivity {
+
+    private final int REQUEST_SELL_CARD_SCAN = 0;
+    private final int REQUEST_BUY_CARD_SCAN = 1;
 
     private int _refreshLastOpsCount = 0;
     private int LAST_HISTORY_MAX_COUNT = 3;
@@ -59,7 +84,6 @@ public class BalanceActivity extends BaseActivity {
      * Some older devices needs a small delay between UI widget updates
      * and a change of the status and navigation bar.
      */
-    private BalanceActivity self;
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
@@ -90,6 +114,82 @@ public class BalanceActivity extends BaseActivity {
     private Button mSegmentButtonRates;
     private Button mSegmentButtonBuy;
     private Button mSegmentButtonSell;
+
+    private EditText mSellCardNumber;
+    private ImageButton mSellScan;
+    private EditText mSellAmount;
+    private Button mSellButton;
+    private TextView mSellRate;
+
+    private EditText mBuyCardNumber;
+    private EditText mBuyCardExp;
+    private EditText mBuyCardCVV;
+    private ImageButton mBuyScan;
+    private EditText mBuyAmount;
+    private Button mBuyButton;
+    private TextView mBuyRate;
+
+    private WebView mWebView;
+
+    private final Handler mSellAmountFocusHandler = new Handler();
+    private final Runnable mSellAmountFocusRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            mSellAmount.setFocusableInTouchMode(true);
+            mSellAmount.requestFocus();
+
+            final InputMethodManager inputMethodManager = (InputMethodManager) BalanceActivity.this
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.showSoftInput(mSellAmount, InputMethodManager.SHOW_IMPLICIT);
+
+        }
+    };
+
+    private final Handler mBuyExpFocusHandler = new Handler();
+    private final Runnable mBuyExpFocusRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            mBuyCardExp.setFocusableInTouchMode(true);
+            mBuyCardExp.requestFocus();
+
+            final InputMethodManager inputMethodManager = (InputMethodManager) BalanceActivity.this
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.showSoftInput(mBuyCardExp, InputMethodManager.SHOW_IMPLICIT);
+
+        }
+    };
+
+    private final Handler mBuyCVVFocusHandler = new Handler();
+    private final Runnable mBuyCVVFocusRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            mBuyCardCVV.setFocusableInTouchMode(true);
+            mBuyCardCVV.requestFocus();
+
+            final InputMethodManager inputMethodManager = (InputMethodManager) BalanceActivity.this
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.showSoftInput(mBuyCardCVV, InputMethodManager.SHOW_IMPLICIT);
+
+        }
+    };
+
+    private final Handler mBuyAmountFocusHandler = new Handler();
+    private final Runnable mBuyAmountFocusRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            mBuyAmount.setFocusableInTouchMode(true);
+            mBuyAmount.requestFocus();
+
+            final InputMethodManager inputMethodManager = (InputMethodManager) BalanceActivity.this
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.showSoftInput(mBuyAmount, InputMethodManager.SHOW_IMPLICIT);
+
+        }
+    };
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -173,7 +273,7 @@ public class BalanceActivity extends BaseActivity {
                     if (data.size() < LAST_HISTORY_MAX_COUNT) {
                         refreshLastHistory(data);
                     } else {
-                        SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                        SimpleAdapter adapter = new SimpleAdapter(BalanceActivity.this, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
                         mLastHistoryListView.setAdapter(adapter);
                         mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
                     }
@@ -275,7 +375,7 @@ public class BalanceActivity extends BaseActivity {
                     for (sibHistoryItem item: result) {
                         memPoolData.add(item.getHashMap());
                     }
-                    SimpleAdapter adapter = new SimpleAdapter(self, memPoolData, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
+                    SimpleAdapter adapter = new SimpleAdapter(BalanceActivity.this, memPoolData, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
                     mLastHistoryListView.setAdapter(adapter);
                     mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
                 }
@@ -334,6 +434,7 @@ public class BalanceActivity extends BaseActivity {
                 }
             }
 
+            @Nullable
             @Override
             protected Double doInBackground(Void... params) {
                 try {
@@ -397,6 +498,7 @@ public class BalanceActivity extends BaseActivity {
                 super.onPreExecute();
             }
 
+            @Nullable
             @Override
             protected ArrayList<sibRateItem> doInBackground(Void... params) {
                 try {
@@ -415,7 +517,7 @@ public class BalanceActivity extends BaseActivity {
                     for (sibRateItem item: result) {
                         data.add(item.getHashMap());
                     }
-                    SimpleAdapter adapter = new SimpleAdapter(self, data, R.layout.rate_item, sibRateItem.getListAdapterFrom(), sibRateItem.getListAdapterTo());
+                    SimpleAdapter adapter = new SimpleAdapter(BalanceActivity.this, data, R.layout.rate_item, sibRateItem.getListAdapterFrom(), sibRateItem.getListAdapterTo());
                     mRatesListView.setAdapter(adapter);
                 }
                 mSwipeRefreshRates.setRefreshing(false);
@@ -435,6 +537,105 @@ public class BalanceActivity extends BaseActivity {
         }
 
         new ratesAsyncTask().execute();
+    }
+
+    private void refreshSellRate()  {
+        final class sellRateAsyncTask extends AsyncTask<Void, Void, Double> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                mSellRate.setText(R.string.sellraterefresh);
+            }
+
+            @Nullable
+            @Override
+            protected Double doInBackground(Void... params) {
+                try {
+                    return Double.valueOf(api.getSellRate(sibApplication.getCurrency()));
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Double result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    sibApplication.model.setSellRate(result);
+                    mSellRate.setText("1SIB ~ " + String.format("%.2f ", result.doubleValue()) +
+                            sibApplication.getCurrencySymbol() + "\n" +
+                            getResources().getString(R.string.sell_commission) + "\n" +
+                            getResources().getString(R.string.sell_cardtransfer_info));
+                }
+            }
+
+            @Override
+            protected void onCancelled(Double result) {
+                super.onCancelled(result);
+                mSellRate.setText(R.string.sell_rate_refresh_error);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                mSellRate.setText(R.string.sell_rate_refresh_error);
+            }
+        }
+
+        new sellRateAsyncTask().execute();
+    }
+
+    private void refreshBuyRate()  {
+        final class buyRateAsyncTask extends AsyncTask<Void, Void, Double> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                mBuyRate.setText(R.string.buyraterefresh);
+            }
+
+            @Nullable
+            @Override
+            protected Double doInBackground(Void... params) {
+                try {
+                    return Double.valueOf(api.getBuyRate(sibApplication.getCurrency()));
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Double result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    sibApplication.model.setBuyRate(result);
+                    mBuyRate.setText("1SIB ~ " + String.format("%.2f ", 1.0 / result.doubleValue()) +
+                            sibApplication.getCurrencySymbol() + "\n" +
+                            getResources().getString(R.string.buy_sibtransfer_info));
+                }
+            }
+
+            @Override
+            protected void onCancelled(Double result) {
+                super.onCancelled(result);
+                mBuyRate.setText(R.string.buy_rate_refresh_error);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                mBuyRate.setText(R.string.buy_rate_refresh_error);
+            }
+        }
+
+        new buyRateAsyncTask().execute();
     }
 
     /**
@@ -457,8 +658,6 @@ public class BalanceActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_balance);
-
-        self = this;
 
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
@@ -490,8 +689,6 @@ public class BalanceActivity extends BaseActivity {
         mSegmentButtonRates = findViewById(R.id.segment_button_rates);
         mSegmentButtonBuy = findViewById(R.id.segment_button_buy);
         mSegmentButtonSell = findViewById(R.id.segment_button_sell);
-
-        final BalanceActivity self = this;
 
         mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -546,7 +743,7 @@ public class BalanceActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 actionAnimation();
-                Intent intent = new Intent(self, SettingsActivity.class);
+                Intent intent = new Intent(BalanceActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
         });
@@ -589,15 +786,15 @@ public class BalanceActivity extends BaseActivity {
                     int LastX = (int) event.getX();
 
                     if (_firstX - LastX > SWIPE_MIN_X_DISTANCE) {
-                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_right_in));
-                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_left_out));
+                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(BalanceActivity.this, R.anim.flip_right_in));
+                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(BalanceActivity.this, R.anim.flip_left_out));
                         mViewFlipper.showNext();
                         mSelectedSegment++;
                         if (mSelectedSegment > 3) mSelectedSegment = 0;
                         updateButtonState();
                     } else if (LastX - _firstX > SWIPE_MIN_X_DISTANCE) {
-                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_left_in));
-                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(self, R.anim.flip_right_out));
+                        mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(BalanceActivity.this, R.anim.flip_left_in));
+                        mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(BalanceActivity.this, R.anim.flip_right_out));
                         mViewFlipper.showPrevious();
                         mSelectedSegment--;
                         if (mSelectedSegment < 0) mSelectedSegment = 3;
@@ -610,6 +807,261 @@ public class BalanceActivity extends BaseActivity {
 
         });
 
+        mSellCardNumber = findViewById(R.id.sell_card_number);
+        mSellScan = findViewById(R.id.sell_scan);
+
+        mSellScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent scanIntent = new Intent(BalanceActivity.this, CardIOActivity.class);
+
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, false);
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false);
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_POSTAL_CODE, false);
+                scanIntent.putExtra(CardIOActivity.EXTRA_KEEP_APPLICATION_THEME, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_SUPPRESS_MANUAL_ENTRY, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_USE_CARDIO_LOGO, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_HIDE_CARDIO_LOGO, true);
+
+                startActivityForResult(scanIntent, REQUEST_SELL_CARD_SCAN);
+            }
+        });
+
+        mSellAmount = findViewById(R.id.sell_amount);
+        mSellButton = findViewById(R.id.sell_button);
+        mSellRate = findViewById(R.id.sell_rate);
+
+        mSellButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkValidForSell()) {
+                    findViewById(R.id.fullscreen_balance_wait).setVisibility(View.VISIBLE);
+                    doSell();
+                }
+            }
+        });
+
+        mSellCardNumber.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (luhnValid(s.toString()) && s.toString().length() == 16)
+                    delayedFocusSellAmount(100);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mSellAmount.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    Double amount = Double.valueOf(s.toString());
+                    mSellButton.setText(getResources().getString(R.string.sellfor) + String.format(" %.2f", amount * sibApplication.model.getSellRate()) + sibApplication.getCurrencySymbol());
+                } catch (Exception ex) {
+                    mSellButton.setText(getResources().getString(R.string.sell));
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mBuyCardNumber = findViewById(R.id.buy_card_number);
+        mBuyScan = findViewById(R.id.buy_scan);
+
+        mBuyScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent scanIntent = new Intent(BalanceActivity.this, CardIOActivity.class);
+
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false);
+                scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_POSTAL_CODE, false);
+                scanIntent.putExtra(CardIOActivity.EXTRA_KEEP_APPLICATION_THEME, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_SUPPRESS_MANUAL_ENTRY, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_USE_CARDIO_LOGO, true);
+                scanIntent.putExtra(CardIOActivity.EXTRA_HIDE_CARDIO_LOGO, true);
+
+                startActivityForResult(scanIntent, REQUEST_BUY_CARD_SCAN);
+            }
+        });
+
+        mBuyCardExp = findViewById(R.id.buy_exp);
+        mBuyCardCVV = findViewById(R.id.buy_cvv);
+        mBuyAmount = findViewById(R.id.buy_amount);
+        mBuyRate = findViewById(R.id.buy_rate);
+        mBuyButton = findViewById(R.id.buy_button);
+
+        mBuyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkValidForBuy()) {
+                    findViewById(R.id.fullscreen_balance_wait).setVisibility(View.VISIBLE);
+                    doBuy();
+                }
+            }
+        });
+
+        mBuyAmount.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    Double amount = Double.valueOf(s.toString());
+                    mBuyButton.setText(getResources().getString(R.string.buyby) + String.format(" %.2f", amount * (1.0 / sibApplication.model.getBuyRate())) + sibApplication.getCurrencySymbol());
+                } catch (Exception ex) {
+                    mBuyButton.setText(getResources().getString(R.string.buy));
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mBuyCardExp.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().length() == 4)
+                    delayedFocusBuyCardCVV(100);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mBuyCardNumber.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (luhnValid(s.toString()) && s.toString().length() == 16)
+                    delayedFocusBuyCardExp(100);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mBuyCardCVV.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().length() == 3)
+                    delayedFocusBuyAmount(100);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+            }
+
+        });
+
+        mWebView = findViewById(R.id.webview);
+        mWebView.getSettings().setJavaScriptEnabled(true);
+
+        class sibWebViewClient extends WebViewClient {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url.startsWith("https://sib.cards/WS/State")) {
+                    Uri uri = Uri.parse(url);
+                    sibApplication.model.setBuyOpKey(uri.getQueryParameter("OpKey"));
+                    mWebView.setVisibility(View.INVISIBLE);
+                    checkBuyOp();
+                }
+                return false;
+            }
+        }
+
+        mWebView.setWebViewClient(new sibWebViewClient());
+    }
+
+    @Contract(pure = true)
+    private boolean checkValidForSell() {
+        try {
+            Double dbl = Double.valueOf(mSellAmount.getText().toString());
+            if (dbl.doubleValue() + Variables.commissionDefault > sibApplication.model.getBalance().doubleValue())
+                throw new Exception(getResources().getString(R.string.exceptionSumBig));
+            if (!luhnValid(mSellCardNumber.getText().toString()))
+                throw new Exception(getResources().getString(R.string.exceptionInvalidCardNumber));
+            return true;
+        } catch (Exception ex) {
+            showError(ex);
+            return false;
+        }
+    }
+
+    @Contract(pure = true)
+    private boolean checkValidForBuy() {
+        try {
+            Double dbl = Double.valueOf(mBuyAmount.getText().toString());
+            if (!luhnValid(mBuyCardNumber.getText().toString()))
+                throw new Exception(getResources().getString(R.string.exceptionInvalidCardNumber));
+            return true;
+        } catch (Exception ex) {
+            showError(ex);
+            return false;
+        }
     }
 
     private void doRefresh() {
@@ -637,20 +1089,143 @@ public class BalanceActivity extends BaseActivity {
 
     private void doReceive() {
         actionAnimation();
-        Intent intent = new Intent(self, ReceiveActivity.class);
+        Intent intent = new Intent(BalanceActivity.this, ReceiveActivity.class);
         startActivity(intent);
     }
 
     private void doSend() {
         actionAnimation();
-        Intent intent = new Intent(self, SendActivity.class);
+        Intent intent = new Intent(BalanceActivity.this, SendActivity.class);
         startActivity(intent);
     }
 
     private void doHistory() {
         actionAnimation();
-        Intent intent = new Intent(self, HistoryActivity.class);
+        Intent intent = new Intent(BalanceActivity.this, HistoryActivity.class);
         startActivity(intent);
+    }
+
+    private void doSell() {
+        hideKeyboard();
+
+        final String currency = sibApplication.getCurrency();
+        final Double sellRate = sibApplication.model.getSellRate();
+        final Double amountSIB = Double.valueOf(mSellAmount.getText().toString());
+        final Double amount = amountSIB * sellRate;
+        final String pan = mSellCardNumber.getText().toString();
+
+        final class processSellAsyncTask extends AsyncTask<Void, Void, String> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                mSellCardNumber.setText("");
+                mSellAmount.setText("");
+            }
+
+            @Nullable
+            @Override
+            protected String doInBackground(Void... params) {
+                try {
+                    return api.processSell(currency, amountSIB, amount, pan);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                String Address = result;
+                sendSIBToAddress(Address, amountSIB);
+            }
+
+            @Override
+            protected void onCancelled(String result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+        }
+
+        new processSellAsyncTask().execute();
+    }
+
+    private void doBuy() {
+        hideKeyboard();
+
+        final String currency = sibApplication.getCurrency();
+        final Double buyRate = sibApplication.model.getBuyRate();
+        final Double amountSIB = Double.valueOf(mBuyAmount.getText().toString());
+        final Double amount = amountSIB * (1.0 / buyRate);
+        final String pan = mBuyCardNumber.getText().toString();
+        final String exp = mBuyCardExp.getText().toString();
+        final String cvv = mBuyCardCVV.getText().toString();
+
+        final class processBuyAsyncTask extends AsyncTask<Void, Void, sibBuyState> {
+
+            protected sibAPI api = new sibAPI();
+            protected String account = "";
+            protected String address = "";
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                sibApplication.model.setBuyOpKey("");
+
+                try {
+                    List<Address> addrs = sibApplication.model.getAddressesForInput();
+                    account = addrs.get(0).getAddress();
+                    address = addrs.get(addrs.size()-1).getAddress();
+                    mBuyCardNumber.setText("");
+                    mBuyCardExp.setText("");
+                    mBuyCardCVV.setText("");
+                    mBuyAmount.setText("");
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Nullable
+            @Override
+            protected sibBuyState doInBackground(Void... params) {
+                try {
+                    return api.processBuy(currency, amountSIB, amount, pan, exp, cvv, account, address);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBuyState result) {
+                super.onPostExecute(result);
+                processBuyState(result);
+            }
+
+            @Override
+            protected void onCancelled(sibBuyState result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+        }
+
+        new processBuyAsyncTask().execute();
     }
 
     public void segmentButtonClick(View view) {
@@ -694,14 +1269,42 @@ public class BalanceActivity extends BaseActivity {
         // are available.
         delayedHide(100);
         doRefresh();
-        refreshRates();
     }
 
     @Override
     protected void onResume() {
+        Variables.MAX_INACTIVE_SECONDS = 15;
+
         super.onResume();
         delayedHide(100);
         doRefresh();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_SELL_CARD_SCAN) {
+            if (data != null && data.hasExtra(CardIOActivity.EXTRA_SCAN_RESULT)) {
+                CreditCard scanResult = data.getParcelableExtra(CardIOActivity.EXTRA_SCAN_RESULT);
+                mSellCardNumber.setText(scanResult.cardNumber);
+                delayedFocusSellAmount(100);
+            }
+        }
+
+        if (requestCode == REQUEST_BUY_CARD_SCAN) {
+            if (data != null && data.hasExtra(CardIOActivity.EXTRA_SCAN_RESULT)) {
+                CreditCard scanResult = data.getParcelableExtra(CardIOActivity.EXTRA_SCAN_RESULT);
+                mBuyCardNumber.setText(scanResult.cardNumber);
+                if (scanResult.isExpiryValid()) {
+                    mBuyCardExp.setText(String.format("%02d%02d", scanResult.expiryMonth, scanResult.expiryYear - (scanResult.expiryYear > 2000 ? 2000 : 0)));
+                    delayedFocusBuyCardCVV(100);
+                } else {
+                    delayedFocusBuyCardExp(100);
+                }
+            }
+
+        }
     }
 
     private void deselectAllSegments() {
@@ -721,18 +1324,22 @@ public class BalanceActivity extends BaseActivity {
             case 1:
                 mSegmentButtonRates.setBackground(getResources().getDrawable(R.drawable.segment_button_middle_selected, this.getTheme()));
                 mSegmentButtonRates.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                refreshRates();
                 break;
             case 2:
                 mSegmentButtonBuy.setBackground(getResources().getDrawable(R.drawable.segment_button_middle_selected, this.getTheme()));
                 mSegmentButtonBuy.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                refreshBuyRate();
                 break;
             case 3:
                 mSegmentButtonSell.setBackground(getResources().getDrawable(R.drawable.segment_button_end_selected, this.getTheme()));
                 mSegmentButtonSell.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                refreshSellRate();
                 break;
             default:
                 mSegmentButtonSIB.setBackground(getResources().getDrawable(R.drawable.segment_button_start_selected, this.getTheme()));
                 mSegmentButtonSIB.setTextColor(getResources().getColor(R.color.colorBlack, this.getTheme()));
+                doRefresh();
                 break;
         }
     }
@@ -779,4 +1386,333 @@ public class BalanceActivity extends BaseActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
+    private void delayedFocusSellAmount(int delayMillis) {
+        mSellAmountFocusHandler.removeCallbacks(mSellAmountFocusRunnable);
+        mSellAmountFocusHandler.postDelayed(mSellAmountFocusRunnable, delayMillis);
+    }
+
+    private void delayedFocusBuyCardExp(int delayMillis) {
+        mBuyExpFocusHandler.removeCallbacks(mBuyExpFocusRunnable);
+        mBuyExpFocusHandler.postDelayed(mBuyExpFocusRunnable, delayMillis);
+    }
+
+    private void delayedFocusBuyCardCVV(int delayMillis) {
+        mBuyCVVFocusHandler.removeCallbacks(mBuyCVVFocusRunnable);
+        mBuyCVVFocusHandler.postDelayed(mBuyCVVFocusRunnable, delayMillis);
+    }
+
+    private void delayedFocusBuyAmount(int delayMillis) {
+        mBuyAmountFocusHandler.removeCallbacks(mBuyAmountFocusRunnable);
+        mBuyAmountFocusHandler.postDelayed(mBuyAmountFocusRunnable, delayMillis);
+    }
+
+    private boolean luhnValid(String number) {
+        int sum = 0;
+        boolean alternate = false;
+        for (int i = number.length() - 1; i >= 0; i--) {
+            int n = Integer.parseInt(number.substring(i, i + 1));
+            if (alternate) {
+                n *= 2;
+                if (n > 9) {
+                    n = (n % 10) + 1;
+                }
+            }
+            sum += n;
+            alternate = !alternate;
+        }
+        return (sum % 10 == 0);
+    }
+
+    private void sendSIBToAddress(final String Address, final Double amountSIB) {
+
+        final class unspentTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibUnspentTransaction>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                ArrayList<String> addrs = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Nullable
+            @Override
+            protected ArrayList<sibUnspentTransaction> doInBackground(Void... params) {
+                try {
+                    return api.getUnspentTransactions(addresses);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibUnspentTransaction> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    try {
+
+                        sibTransaction tx = prepareTransaction(result.toArray(new sibUnspentTransaction[0]), amountSIB, Address);
+                        sendTransaction(tx);
+
+                    } catch (Exception ex) {
+                        findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        hideKeyboard();
+
+        new unspentTransactionsAsyncTask().execute();
+
+    }
+
+    private sibTransaction prepareTransaction(sibUnspentTransaction[] unspent, Double amount, String Address) throws Exception {
+        Double spent = 0.0;
+        Double commission = Variables.commissionDefault;
+
+        sibTransaction tx = new sibTransaction();
+        tx.addOutput(Address, amount);
+
+        for (sibUnspentTransaction u: unspent) {
+            if (spent < amount + commission) {
+                spent += u.Amount;
+                tx.addInput(u);
+            } else {
+                break;
+            }
+        }
+        tx.addChange(spent - amount - commission);
+        return tx;
+    }
+
+    private void sendTransaction(sibTransaction tx) throws Exception {
+        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
+
+        final class broadcastTransactionAsyncTask extends AsyncTask<int[], Void, sibBroadcastTransactionResult> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected sibBroadcastTransactionResult doInBackground(int[]... params) {
+                try {
+                    return api.broadcastTransaction(params[0]);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBroadcastTransactionResult result) {
+                super.onPostExecute(result);
+                String message = "";
+                if (result.IsBroadcasted) {
+                    message = getResources().getString(R.string.successBroadcasted) + " " + result.TransactionId;
+                } else {
+                    message = result.Message;
+                }
+
+                final String txid = result.TransactionId;
+
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(BalanceActivity.this);
+                builder.setTitle(R.string.alertDialogBroadcastTitle)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNeutralButton(R.string.CopyToClipboard,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), txid);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(BalanceActivity.this);
+                                        builder.setTitle(R.string.alertDialogClipboardTitle)
+                                                .setMessage(R.string.alertDialogClipboardMessage)
+                                                .setCancelable(false)
+                                                .setNegativeButton(R.string.OK,
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();
+                                    }
+                                })
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
+
+                refreshMemPool();
+                segmentButtonClick(mSegmentButtonSIB);
+            }
+
+            @Override
+            protected void onCancelled(sibBroadcastTransactionResult result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        new broadcastTransactionAsyncTask().execute(sign);
+    }
+
+    private void processBuyState(sibBuyState state) {
+        if (state.State.equals("Redirect") && !state.RedirectUrl.equals("")) {
+            mWebView.setVisibility(View.VISIBLE);
+            mWebView.loadUrl(state.RedirectUrl);
+            return;
+        }
+
+        switch (state.State) {
+            case "ERROR":
+                showError(new Exception(getResources().getString(R.string.buyOpCheckError)));
+                sibApplication.model.setBuyOpKey("");
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+                break;
+            case "Done":
+                final String opkey = sibApplication.model.getBuyOpKey();
+                String message = getResources().getString(R.string.buyOpDone) + "\n" + "OpKey: " + opkey;
+                AlertDialog.Builder builder = new AlertDialog.Builder(BalanceActivity.this);
+                builder.setTitle(R.string.alertDialogBuyTitle)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNeutralButton(R.string.CopyToClipboard,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), opkey);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(BalanceActivity.this);
+                                        builder.setTitle(R.string.alertDialogClipboardTitle)
+                                                .setMessage(R.string.alertDialogClipboardMessage)
+                                                .setCancelable(false)
+                                                .setNegativeButton(R.string.OK,
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();                                    }
+                                })
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+
+                sibApplication.model.setBuyOpKey("");
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+                break;
+            case "Cancel":
+                showMessage(getResources().getString(R.string.buyOpCancel));
+                sibApplication.model.setBuyOpKey("");
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
+                break;
+            default:
+                checkBuyOp();
+                break;
+        }
+    }
+
+    private void checkBuyOp() {
+        final class checkBuyOpAsyncTask extends AsyncTask<Void, Void, sibBuyState> {
+
+            protected sibAPI api = new sibAPI();
+            protected String opKey = sibApplication.model.getBuyOpKey();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected sibBuyState doInBackground(Void... params) {
+                try {
+                    return api.checkOperation(opKey);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBuyState result) {
+                super.onPostExecute(result);
+                processBuyState(result);
+            }
+
+            @Override
+            protected void onCancelled(sibBuyState result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
+            }
+        }
+
+        new checkBuyOpAsyncTask().execute();
+    }
 }

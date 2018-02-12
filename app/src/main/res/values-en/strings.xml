@@ -65,6 +65,10 @@
     <string name="hintAmount">amount</string>
     <string name="hintAddress">address</string>
     <string name="hintCommission">commission</string>
+    <string name="hintCardExp">MMYY</string>
+    <string name="hintCVV">CVV</string>
+    <string name="hintCardNumber">card number</string>
+    <string name="hintAmountSIB">amount SIB</string>
 
     <string name="btnSendText">Send transfer</string>
 
@@ -88,4 +92,29 @@
 
     <string name="historyItemDetails">Show Details</string>
     <string name="historyItemCopy">Copy to clipboard</string>
+
+    <string name="checkPIN">PIN</string>
+    <string name="go">GO</string>
+
+    <string name="sell">Sell</string>
+    <string name="sellfor">Sell for</string>
+    <string name="sellraterefresh">...</string>
+    <string name="sell_commission">commission 30₽ every 70000₽</string>
+    <string name="sell_rate_refresh_error">error get rate</string>
+    <string name="sell_cardtransfer_info">the transfer of funds to the card, depending on your bank and the type of card takes from 3 minutes to 3 days</string>
+
+    <string name="buy">Buy</string>
+    <string name="buyby">Buy by</string>
+    <string name="buyraterefresh">...</string>
+    <string name="buy_rate_refresh_error">error get rate</string>
+    <string name="buy_sibtransfer_info">transfer is carried out with the speed of the chain</string>
+
+    <string name="exceptionSumBig">Sum too big</string>
+    <string name="exceptionInvalidCardNumber">Card Number is invalid</string>
+
+    <string name="buyOpCheckError">Error while checking operation state...</string>
+    <string name="buyOpDone">All done! Wait fo SIBCoin.</string>
+    <string name="buyOpCancel">Operation canceled. Please try again.</string>
+
+    <string name="alertDialogBuyTitle">Operation complete</string>
 </resources>
