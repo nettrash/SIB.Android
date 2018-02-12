@@ -117,4 +117,7 @@
     <string name="buyOpCancel">Operation canceled. Please try again.</string>
 
     <string name="alertDialogBuyTitle">Operation complete</string>
+
+    <string name="sellRateEmpty">Sell rate empty. Refresh sell rate before continue.</string>
+    <string name="buyRateEmpty">Buy rate empty. Refresh buy rate before continue.</string>
 </resources>

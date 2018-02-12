@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -27,6 +28,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.app.AlertDialog;
 
@@ -86,6 +88,7 @@ public class SettingsActivity extends BaseActivity {
     private View mContentView;
     private Button mSaveKeys;
     private Button mLoadKeys;
+    private RadioGroup mCurrency;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -149,6 +152,36 @@ public class SettingsActivity extends BaseActivity {
         mContentView = findViewById(R.id.fullscreen_content);
         mSaveKeys = findViewById(R.id.save_keys);
         mLoadKeys = findViewById(R.id.load_keys);
+        mCurrency = findViewById(R.id.currency_radiogroup);
+
+        switch (sibApplication.getCurrency()) {
+            case "USD":
+                mCurrency.check(R.id.currency_usd_radiobutton);
+                break;
+            case "EUR":
+                mCurrency.check(R.id.currency_eur_radiobutton);
+                break;
+            default:
+                mCurrency.check(R.id.currency_rub_radiobutton);
+                break;
+        }
+
+        mCurrency.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.currency_usd_radiobutton:
+                        sibApplication.setCurrency("USD");
+                        break;
+                    case R.id.currency_eur_radiobutton:
+                        sibApplication.setCurrency("EUR");
+                        break;
+                    default:
+                        sibApplication.setCurrency("RUB");
+                        break;
+                }
+            }
+        });
 
         mSaveKeys.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -197,7 +230,7 @@ public class SettingsActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
-        Variables.MAX_INACTIVE_SECONDS = 600;
+        sibApplication.setInactiveSeconds(600);
 
         super.onResume();
         delayedHide(100);
@@ -324,28 +357,26 @@ public class SettingsActivity extends BaseActivity {
                                 keyData.put("hash", b64Hash);
                                 keyData.put("keys", new JSONArray(v));
 
-                                Uri keysUri = null;
-                                String sPath = "";
+                                File cachePath = File.createTempFile("keys", ".sib", getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS));
                                 //save to file and share
                                 try
                                 {
-                                    File root = Environment.getExternalStorageDirectory();
-                                    File cachePath = new File(root.getAbsolutePath() + "/Download/keys.sib");
-                                    sPath = cachePath.getPath();
-
                                     cachePath.createNewFile();
                                     FileOutputStream ostream = new FileOutputStream(cachePath);
                                     OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
                                     outputStreamWriter.write(keyData.toString());
                                     outputStreamWriter.close();
-
-                                    keysUri = Uri.parse(cachePath.getAbsolutePath());
+                                    ostream.close();
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     throw e;
                                 }
 
-                                showMessage(getResources().getString(R.string.keystoreSaved) + " " + "/Download/keys.sib");
+
+                                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                                shareIntent.setType("*/*");
+                                shareIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(getApplicationContext(), "ru.nettrash.sibliteandroid.fileprovider", cachePath));
+                                startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.keysShareTitle)));
 
                                 findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
                             } catch (Exception ex) {

@@ -496,6 +496,7 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
+                mSwipeRefreshRates.setRefreshing(true);
             }
 
             @Nullable
@@ -1028,17 +1029,28 @@ public class BalanceActivity extends BaseActivity {
                     sibApplication.model.setBuyOpKey(uri.getQueryParameter("OpKey"));
                     mWebView.setVisibility(View.INVISIBLE);
                     checkBuyOp();
+                    sibApplication.setInactiveSeconds(Variables.inactiveSecondsDefault);
                 }
                 return false;
             }
         }
 
         mWebView.setWebViewClient(new sibWebViewClient());
+
+        try {
+            String opkey = sibApplication.model.getBuyOpKey();
+            if (opkey != null && !opkey.equals(""))
+                mWebView.setVisibility(View.VISIBLE);
+        } catch (Exception ex) {
+
+        }
     }
 
     @Contract(pure = true)
     private boolean checkValidForSell() {
         try {
+            if (sibApplication.model.getSellRate() == null || sibApplication.model.getSellRate().doubleValue() <= 0.0)
+                throw new Exception(getResources().getString(R.string.sellRateEmpty));
             Double dbl = Double.valueOf(mSellAmount.getText().toString());
             if (dbl.doubleValue() + Variables.commissionDefault > sibApplication.model.getBalance().doubleValue())
                 throw new Exception(getResources().getString(R.string.exceptionSumBig));
@@ -1054,6 +1066,8 @@ public class BalanceActivity extends BaseActivity {
     @Contract(pure = true)
     private boolean checkValidForBuy() {
         try {
+            if (sibApplication.model.getBuyRate() == null || 1.0 / sibApplication.model.getBuyRate().doubleValue() <= 0.0)
+                throw new Exception(getResources().getString(R.string.buyRateEmpty));
             Double dbl = Double.valueOf(mBuyAmount.getText().toString());
             if (!luhnValid(mBuyCardNumber.getText().toString()))
                 throw new Exception(getResources().getString(R.string.exceptionInvalidCardNumber));
@@ -1273,11 +1287,15 @@ public class BalanceActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
-        Variables.MAX_INACTIVE_SECONDS = 15;
-
         super.onResume();
+
+        sibApplication.setInactiveSeconds(Variables.inactiveSecondsDefault);
+
         delayedHide(100);
         doRefresh();
+        refreshRates();
+        refreshBuyRate();
+        refreshSellRate();
     }
 
     @Override
@@ -1609,6 +1627,7 @@ public class BalanceActivity extends BaseActivity {
 
     private void processBuyState(sibBuyState state) {
         if (state.State.equals("Redirect") && !state.RedirectUrl.equals("")) {
+            sibApplication.setInactiveSeconds(600);
             mWebView.setVisibility(View.VISIBLE);
             mWebView.loadUrl(state.RedirectUrl);
             return;

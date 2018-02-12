@@ -55,6 +55,45 @@
             android:textAlignment="center"
             android:textColor="@color/colorWhite"/>
 
+        <RadioGroup
+            android:id="@+id/currency_radiogroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="112pt"
+            android:gravity="center_vertical|center_horizontal">
+
+            <RadioButton
+                android:id="@+id/currency_rub_radiobutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:textSize="10pt"
+                android:padding="4pt"
+                android:textColor="@color/colorDark"
+                android:text="RUB"/>
+
+            <RadioButton
+                android:id="@+id/currency_usd_radiobutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:textSize="10pt"
+                android:padding="4pt"
+                android:textColor="@color/colorDark"
+                android:text="USD"/>
+
+            <RadioButton
+                android:id="@+id/currency_eur_radiobutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:textSize="10pt"
+                android:padding="4pt"
+                android:textColor="@color/colorDark"
+                android:text="EUR"/>
+        </RadioGroup>
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

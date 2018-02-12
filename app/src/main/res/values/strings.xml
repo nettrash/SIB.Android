@@ -113,8 +113,11 @@
     <string name="exceptionInvalidCardNumber">Card Number is invalid</string>
 
     <string name="buyOpCheckError">Error while checking operation state...</string>
-    <string name="buyOpDone">All done! Wait fo SIBCoin.</string>
+    <string name="buyOpDone">All done! Wait for SIBCoin.</string>
     <string name="buyOpCancel">Operation canceled. Please try again.</string>
 
     <string name="alertDialogBuyTitle">Operation complete</string>
+
+    <string name="sellRateEmpty">Sell rate empty. Refresh sell rate before continue.</string>
+    <string name="buyRateEmpty">Buy rate empty. Refresh buy rate before continue.</string>
 </resources>

@@ -4,9 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import org.jetbrains.annotations.Contract;
+
+import java.util.Date;
 
 import ru.nettrash.sibcoin.models.rootModel;
 
@@ -39,13 +42,88 @@ public final class SIBApplication extends Application {
     @NonNull
     @Contract(pure = true)
     public String getCurrencySymbol() {
-        return "₽";
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        return preferences.getString("CurrencySymbol", "₽");
     }
 
     @NonNull
     @Contract(pure = true)
     public String getCurrency() {
-        return "RUB";
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        return preferences.getString("Currency", "RUB");
+    }
+
+    public void setCurrency(String currency) {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        switch (currency) {
+            case "USD":
+                editor.putString("Currency",  "USD");
+                editor.putString("CurrencySymbol",  "$");
+                break;
+            case "EUR":
+                editor.putString("Currency",  "EUR");
+                editor.putString("CurrencySymbol",  "€");
+                break;
+            default:
+                editor.putString("Currency",  "RUB");
+                editor.putString("CurrencySymbol",  "₽");
+                break;
+        }
+        editor.commit();
+    }
+
+    @Contract(pure = true)
+    public boolean needCheckPIN() {
+        Date lastStopDate = getLastStopDate();
+        if (lastStopDate == null) return false;
+        Date d = new Date();
+        return (d.getTime() - lastStopDate.getTime()) / 1000 > getInactiveSeconds();
+    }
+
+    public int getInactiveSeconds() {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        return preferences.getInt("InactiveSeconds", Variables.inactiveSecondsDefault);
+    }
+
+    public void setInactiveSeconds(int value) {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("InactiveSeconds", value);
+        editor.commit();
+    }
+
+    @Nullable
+    public Date getLastStopDate() {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        long time = preferences.getLong("LastStopDate", 0);
+        if (time > 0)
+            return new Date(time);
+        return null;
+    }
+
+    public void setLastStopDate(Date value) {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        if (value != null) {
+            editor.putLong("LastStopDate", value.getTime());
+        } else {
+            editor.putLong("LastStopDate", 0);
+        }
+        editor.commit();
+    }
+
+    @Nullable
+    public String getLastStoppedActivityClassName() {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        return preferences.getString("LastStoppedActivityClassName", "");
+    }
+
+    public void setLastStoppedActivityClassName(String value) {
+        SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("LastStoppedActivityClassName", value);
+        editor.commit();
     }
 
 }

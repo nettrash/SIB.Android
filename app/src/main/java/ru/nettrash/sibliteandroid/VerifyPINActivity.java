@@ -215,9 +215,8 @@ public class VerifyPINActivity extends BaseActivity {
             w.initialize(privateKeySource);
             sibApplication.model.storeWallet(w, (short)0 /*Incoming*/);
             sibApplication.setPIN(pin);
-            Variables.runFirstLogin = false;
-            Variables.lastStopDate = null;
-            Variables.lastStoppedActivityClassName = "after install";
+            sibApplication.setLastStopDate(null);
+            sibApplication.setLastStoppedActivityClassName("after install");
             //goto main
             Intent intent = new Intent(this, BalanceActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

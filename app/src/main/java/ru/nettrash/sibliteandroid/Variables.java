@@ -1,5 +1,8 @@
 package ru.nettrash.sibliteandroid;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import org.jetbrains.annotations.Contract;
 
 import java.util.Date;
@@ -10,17 +13,7 @@ import java.util.Date;
 
 final class Variables {
 
-    public static String lastStoppedActivityClassName = "";
-    public static Date lastStopDate = null;
-    public static int MAX_INACTIVE_SECONDS = 15;
-    public static boolean runFirstLogin = true;
+    public static int inactiveSecondsDefault = 15;
     public static Double commissionDefault = 0.001;
 
-    @Contract(pure = true)
-    public static boolean needCheckPIN() {
-        if (runFirstLogin) return true;
-        if (lastStopDate == null) return false;
-        Date d = new Date();
-        return (d.getTime() - lastStopDate.getTime()) / 1000 > MAX_INACTIVE_SECONDS;
-    }
 }

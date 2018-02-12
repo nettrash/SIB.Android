@@ -270,7 +270,7 @@
                         android:textColor="@color/colorDark"
                         android:textAlignment="gravity"
                         android:gravity="center_vertical|center_horizontal"
-                        android:text="@string/sell" />
+                        android:text="@string/buy" />
                     <TextView
                         android:id="@+id/buy_rate"
                         android:layout_width="match_parent"

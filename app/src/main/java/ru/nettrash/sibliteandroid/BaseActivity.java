@@ -62,6 +62,9 @@ class BaseActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         sibApplication = (SIBApplication)getApplicationContext();
+        if (sibApplication.model == null) {
+            sibApplication.initialize();
+        }
     }
 
     @Override
@@ -80,12 +83,17 @@ class BaseActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        if (!sibApplication.model.firstRun()) {
-            if (Variables.lastStoppedActivityClassName.equals(this.getClass().getName()) || Variables.lastStoppedActivityClassName.equals("")) {
-                if (Variables.needCheckPIN()) {
-                    checkPIN();
+        try {
+            if (!sibApplication.model.firstRun()) {
+                String lastStoppedActivityClassName = sibApplication.getLastStoppedActivityClassName();
+                if (lastStoppedActivityClassName.equals(this.getClass().getName()) || lastStoppedActivityClassName.equals("")) {
+                    if (sibApplication.needCheckPIN()) {
+                        checkPIN();
+                    }
                 }
             }
+        } catch (Exception ex) {
+
         }
     }
 
@@ -93,8 +101,8 @@ class BaseActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (!sibApplication.model.firstRun()) {
-            Variables.lastStoppedActivityClassName = this.getClass().getName();
-            Variables.lastStopDate = new Date();
+            sibApplication.setLastStopDate(new Date());
+            sibApplication.setLastStoppedActivityClassName(this.getClass().getName());
         }
     }
 
@@ -102,14 +110,13 @@ class BaseActivity extends Activity {
     protected void onStop() {
         super.onStop();
         if (!sibApplication.model.firstRun()) {
-            Variables.lastStoppedActivityClassName = this.getClass().getName();
-            Variables.lastStopDate = new Date();
+            sibApplication.setLastStopDate(new Date());
+            sibApplication.setLastStoppedActivityClassName(this.getClass().getName());
         }
     }
 
     protected void afterPINChecked() {
-        Variables.lastStoppedActivityClassName = "all running";
-        Variables.runFirstLogin = false;
+        sibApplication.setLastStoppedActivityClassName("all running");
         BaseActivity.this.onCreate(null);
         BaseActivity.this.onPostCreate(null);
     }
@@ -181,7 +188,7 @@ class BaseActivity extends Activity {
     public void onBackPressed() {
         super.onBackPressed();
         overridePendingTransitionExit();
-        if (Variables.needCheckPIN())
+        if (sibApplication.needCheckPIN())
             moveTaskToBack(true);
     }
 

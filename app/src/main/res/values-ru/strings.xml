@@ -106,7 +106,7 @@
     <string name="buy">Купить</string>
     <string name="buyby">Купить за</string>
     <string name="buyraterefresh">...</string>
-    <string name="buby_rate_refresh_error">ошибка курса</string>
+    <string name="buy_rate_refresh_error">ошибка курса</string>
     <string name="buy_sibtransfer_info">перевод червонцев осуществляется со скоростью работы цепи</string>
 
     <string name="exceptionSumBig">Сумма слишком большая</string>
@@ -117,4 +117,7 @@
     <string name="buyOpCancel">Операци отменена. Попробуйте ещё раз.</string>
 
     <string name="alertDialogBuyTitle">Покупка совершена</string>
+
+    <string name="sellRateEmpty">Курс продажи на загружен. Попробуйте позднее.</string>
+    <string name="buyRateEmpty">Курс покупки не загружен. Попробуйте позднее.</string>
 </resources>

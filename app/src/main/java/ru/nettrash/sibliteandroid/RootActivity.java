@@ -106,9 +106,6 @@ public class RootActivity extends BaseActivity {
         // are available.
         delayedHide(100);
 
-        sibApplication.initialize();
-
-
         if (sibApplication.model.firstRun()) {
             //create first address
             Intent intent = new Intent(this, InitializeActivity.class);

@@ -1,5 +1,6 @@
 package ru.nettrash.sibliteandroid;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -8,6 +9,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,6 +21,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -205,34 +208,9 @@ public class ReceiveActivity extends BaseActivity {
         mButtonShareView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Share image bitmap
                 try {
-                    ImageView img = findViewById(R.id.image_receive_qr);
-                    img.setDrawingCacheEnabled(true);
-                    Bitmap mBitmap = img.getDrawingCache();
-
-                    File root = Environment.getExternalStorageDirectory();
-                    File cachePath = new File(root.getAbsolutePath() + "/DCIM/Camera/sibQR_"+mAddressView.getText().toString()+".jpg");
-                    try
-                    {
-                        cachePath.createNewFile();
-                        FileOutputStream ostream = new FileOutputStream(cachePath);
-                        mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, ostream);
-                        ostream.close();
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    Uri phototUri = Uri.parse(cachePath.getAbsolutePath());
-                    shareIntent.setData(phototUri);
-                    shareIntent.setType("image/*");
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, phototUri);
-                    startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.addressShareTitle)));
+                    ReceiveActivity.this.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
                 } catch (Exception ex) {
-
                 }
             }
         });
@@ -255,6 +233,64 @@ public class ReceiveActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         delayedHide(100);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    shareImage();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+
+    }
+
+    private void shareImage() {
+
+        //Share image bitmap
+        try {
+            ImageView img = findViewById(R.id.image_receive_qr);
+            img.setDrawingCacheEnabled(true);
+            Bitmap mBitmap = img.getDrawingCache();
+
+            File cachePath = File.createTempFile("sibQR", ".jpg", getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+            try
+            {
+                cachePath.createNewFile();
+                FileOutputStream ostream = new FileOutputStream(cachePath);
+                mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, ostream);
+                ostream.close();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("image/*");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(getApplicationContext(), "ru.nettrash.sibliteandroid.fileprovider", cachePath));
+            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.addressShareTitle)));
+        } catch (Exception ex) {
+            showError(ex);
+        }
+
     }
 
     private void refreshQR() {
