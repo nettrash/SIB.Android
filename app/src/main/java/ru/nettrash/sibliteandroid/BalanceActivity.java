@@ -775,7 +775,7 @@ public class BalanceActivity extends BaseActivity {
                 }
         );
 
-        mViewFlipper.setOnTouchListener(new View.OnTouchListener() {
+        /*mViewFlipper.setOnTouchListener(new View.OnTouchListener() {
 
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -806,7 +806,7 @@ public class BalanceActivity extends BaseActivity {
                 return true;
             }
 
-        });
+        });*/
 
         mSellCardNumber = findViewById(R.id.sell_card_number);
         mSellScan = findViewById(R.id.sell_scan);
@@ -1243,6 +1243,7 @@ public class BalanceActivity extends BaseActivity {
     }
 
     public void segmentButtonClick(View view) {
+        delayedHide(100);
         int nOldSelectedSegment = mSelectedSegment;
         int nNewSelectedSegment = nOldSelectedSegment;
         if (view == mSegmentButtonSIB) {
