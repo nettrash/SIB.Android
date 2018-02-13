@@ -100,6 +100,8 @@
     <string name="sellfor">Sell for</string>
     <string name="sellraterefresh">...</string>
     <string name="sell_commission">commission 30₽ every 70000₽</string>
+    <string name="sell_commission_usd">commission 3$ every 1000$</string>
+    <string name="sell_commission_eur">commission 3€ every 1000€</string>
     <string name="sell_rate_refresh_error">error get rate</string>
     <string name="sell_cardtransfer_info">the transfer of funds to the card, depending on your bank and the type of card takes from 3 minutes to 3 days</string>
 

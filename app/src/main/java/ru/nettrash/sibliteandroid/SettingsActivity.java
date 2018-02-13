@@ -334,7 +334,7 @@ public class SettingsActivity extends BaseActivity {
                                     md5.update(password.getBytes());
                                     byte[] passwordb = md5.digest();
 
-                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
 
                                     SecretKeySpec secretKeySpec = new SecretKeySpec(passwordb, "AES");
                                     IvParameterSpec ivParameterSpec = new IvParameterSpec(ivb);
@@ -462,7 +462,7 @@ public class SettingsActivity extends BaseActivity {
                                     md5.update(password.getBytes());
                                     byte[] passwordb = md5.digest();
 
-                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
 
                                     SecretKeySpec secretKeySpec = new SecretKeySpec(passwordb, "AES");
                                     IvParameterSpec ivParameterSpec = new IvParameterSpec(ivb);

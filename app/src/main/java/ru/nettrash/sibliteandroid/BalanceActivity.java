@@ -252,6 +252,7 @@ public class BalanceActivity extends BaseActivity {
                 }
             }
 
+            @Nullable
             @Override
             protected ArrayList<sibMemPoolItem> doInBackground(Void... params) {
                 try {
@@ -355,6 +356,7 @@ public class BalanceActivity extends BaseActivity {
                 }
             }
 
+            @Nullable
             @Override
             protected ArrayList<sibHistoryItem> doInBackground(Void... params) {
                 try {
@@ -567,9 +569,21 @@ public class BalanceActivity extends BaseActivity {
                 super.onPostExecute(result);
                 if (result != null) {
                     sibApplication.model.setSellRate(result);
+                    int commission = -1;
+                    switch (sibApplication.getCurrency()) {
+                        case "USD":
+                            commission = R.string.sell_commission_usd;
+                            break;
+                        case "EUR":
+                            commission = R.string.sell_commission_eur;
+                            break;
+                        default:
+                            commission = R.string.sell_commission;
+                            break;
+                    }
                     mSellRate.setText("1SIB ~ " + String.format("%.2f ", result.doubleValue()) +
                             sibApplication.getCurrencySymbol() + "\n" +
-                            getResources().getString(R.string.sell_commission) + "\n" +
+                            getResources().getString(commission) + "\n" +
                             getResources().getString(R.string.sell_cardtransfer_info));
                 }
             }
@@ -1283,6 +1297,10 @@ public class BalanceActivity extends BaseActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
+
+        mSelectedSegment = mViewFlipper.getDisplayedChild();
+        updateButtonState();
+
         doRefresh();
     }
 
@@ -1293,6 +1311,10 @@ public class BalanceActivity extends BaseActivity {
         sibApplication.setInactiveSeconds(Variables.inactiveSecondsDefault);
 
         delayedHide(100);
+
+        mSelectedSegment = mViewFlipper.getDisplayedChild();
+        updateButtonState();
+
         doRefresh();
         refreshRates();
         refreshBuyRate();
