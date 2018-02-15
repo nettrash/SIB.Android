@@ -73,6 +73,13 @@ public class SendActivity extends BaseActivity {
     private ImageButton mScanView;
     private Button mSendView;
 
+    private String otherCurrency;
+    private String otherAddress;
+    private Double otherAmount;
+    private Double otherSellRate;
+    private Double otherAmountSIB;
+    private Double otherCommissionSIB;
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -246,7 +253,7 @@ public class SendActivity extends BaseActivity {
                     mAddressView.setText(contents);
                     mAmountView.requestFocus();
                 } else {
-                    if (contents.startsWith("sibcoin:")) {
+                    if (contents.toLowerCase().startsWith("sibcoin:")) {
                         try {
                             Uri url = Uri.parse(contents.startsWith("sibcoin://") ? contents : contents.replace("sibcoin:", "sibcoin://"));
                             if (sibAddress.verify(url.getHost())) {
@@ -258,6 +265,23 @@ public class SendActivity extends BaseActivity {
                                 } else {
                                     mAmountView.requestFocus();
                                 }
+                            }
+                        } catch (Exception ex) {
+
+                        }
+                    }
+                    if (contents.toLowerCase().startsWith("bitcoin:") ||
+                            contents.toLowerCase().startsWith("biocoin:")) {
+                        try {
+                            Uri url = Uri.parse(contents.contains("coin://") ? contents : contents.replace("coin:", "coin://"));
+                            if (sibAddress.verify(url.getHost())) {
+                                otherCurrency = contents.toLowerCase().startsWith("bitcoin:") ? "BTC" : "BIO";
+                                otherAddress = url.getHost();
+                                otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+
+                                findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+
+                                refreshOtherSellRate();
                             }
                         } catch (Exception ex) {
 
@@ -485,4 +509,322 @@ public class SendActivity extends BaseActivity {
 
         new broadcastTransactionAsyncTask().execute(sign);
     }
+
+    private void refreshOtherSellRate() {
+        final class sellRateAsyncTask extends AsyncTask<Void, Void, Double> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                otherSellRate = 0.0;
+            }
+
+            @Nullable
+            @Override
+            protected Double doInBackground(Void... params) {
+                try {
+                    return Double.valueOf(api.getSellRate(otherCurrency));
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Double result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    otherSellRate = result;
+                    otherAmountSIB = otherAmount / otherSellRate;
+                    otherCommissionSIB = otherAmountSIB * 0.001;
+
+                    if (sibApplication.model.getBalance() < otherAmountSIB + otherCommissionSIB) {
+
+
+                        String title = getResources().getString(R.string.otherSell) + otherCurrency;
+                        String message = String.format(getResources().getString(R.string.otherSellMessage),
+                                otherAddress, otherAmount, otherAmountSIB, otherCommissionSIB);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                        builder.setTitle(title)
+                                .setMessage(message)
+                                .setCancelable(false)
+                                .setNeutralButton(R.string.Fullfill,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                                doSell();
+                                            }
+                                        })
+                                .setNegativeButton(R.string.Cancel,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                                                dialog.cancel();
+                                            }
+                                        });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+
+
+                    } else {
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                        showError(new Exception(getResources().getString(R.string.amountBigError)));
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(Double result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                showError(new Exception(getResources().getString(R.string.sell_rate_refresh_error)));
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                showError(new Exception(getResources().getString(R.string.sell_rate_refresh_error)));
+            }
+        }
+
+        new sellRateAsyncTask().execute();
+    }
+
+    private void doSell() {
+        hideKeyboard();
+
+        final String currency = otherCurrency;
+        final Double sellRate = otherSellRate;
+        final Double amountSIB = otherAmountSIB;
+        final Double amount = otherAmount;
+        final String pan = otherAddress;
+
+        final class processSellAsyncTask extends AsyncTask<Void, Void, String> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected String doInBackground(Void... params) {
+                try {
+                    return api.processSell(currency, amountSIB, amount, pan);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                String Address = result;
+                sendSIBToAddress(Address, amountSIB);
+            }
+
+            @Override
+            protected void onCancelled(String result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+            }
+        }
+
+        new processSellAsyncTask().execute();
+    }
+
+    private void sendSIBToAddress(final String Address, final Double amountSIB) {
+
+        final class unspentTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibUnspentTransaction>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                ArrayList<String> addrs = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Nullable
+            @Override
+            protected ArrayList<sibUnspentTransaction> doInBackground(Void... params) {
+                try {
+                    return api.getUnspentTransactions(addresses);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibUnspentTransaction> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    try {
+
+                        sibTransaction tx = prepareTransaction(result.toArray(new sibUnspentTransaction[0]), amountSIB, Address);
+                        sendOtherTransaction(tx);
+
+                    } catch (Exception ex) {
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        hideKeyboard();
+
+        new unspentTransactionsAsyncTask().execute();
+
+    }
+
+    private sibTransaction prepareTransaction(sibUnspentTransaction[] unspent, Double amount, String Address) throws Exception {
+        Double spent = 0.0;
+
+        sibTransaction tx = new sibTransaction();
+        tx.addOutput(Address, amount);
+
+        for (sibUnspentTransaction u: unspent) {
+            if (spent < amount + otherCommissionSIB) {
+                spent += u.Amount;
+                tx.addInput(u);
+            } else {
+                break;
+            }
+        }
+        tx.addChange(spent - amount - otherCommissionSIB);
+        return tx;
+    }
+
+    private void sendOtherTransaction(sibTransaction tx) throws Exception {
+        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
+
+        final class broadcastTransactionAsyncTask extends AsyncTask<int[], Void, sibBroadcastTransactionResult> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected sibBroadcastTransactionResult doInBackground(int[]... params) {
+                try {
+                    return api.broadcastTransaction(params[0]);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBroadcastTransactionResult result) {
+                super.onPostExecute(result);
+                String message = "";
+                if (result.IsBroadcasted) {
+                    message = getResources().getString(R.string.successBroadcasted) + " " + result.TransactionId;
+                } else {
+                    message = result.Message;
+                }
+
+                final String txid = result.TransactionId;
+
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                builder.setTitle(R.string.alertDialogBroadcastTitle)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNeutralButton(R.string.CopyToClipboard,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), txid);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                                        builder.setTitle(R.string.alertDialogClipboardTitle)
+                                                .setMessage(R.string.alertDialogClipboardMessage)
+                                                .setCancelable(false)
+                                                .setNegativeButton(R.string.OK,
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();
+                                    }
+                                })
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+
+            @Override
+            protected void onCancelled(sibBroadcastTransactionResult result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        new broadcastTransactionAsyncTask().execute(sign);
+    }
+
 }

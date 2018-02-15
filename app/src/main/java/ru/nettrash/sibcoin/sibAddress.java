@@ -121,6 +121,62 @@ public final class sibAddress {
         }
     }
 
+    public static boolean verifyBTC(String address) {
+        try {
+            if (address == null) return false;
+            if (address.length() < 26 || address.length() > 35) return false;
+            if (address.charAt(0) != '1' && address.charAt(0) != '3') return false;
+
+            int[] decoded = decodeBase58(address);
+            int[] dd = ru.nettrash.util.Arrays.subarray(decoded, 0, 21);
+            SHA256 sha256 = new SHA256();
+            sha256.update(ru.nettrash.util.Arrays.toByteArray(dd));
+            byte[] d1 = sha256.digest();
+            sha256 = new SHA256();
+            sha256.update(d1);
+            byte[] d2 = sha256.digest();
+            int[] id2 = ru.nettrash.util.Arrays.toUnsignedByteArray(d2);
+            if (decoded[21] != id2[0] ||
+                    decoded[22] != id2[1] ||
+                    decoded[23] != id2[2] ||
+                    decoded[24] != id2[3]) {
+                return false;
+            }
+
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public static boolean verifyBIO(String address) {
+        try {
+            if (address == null) return false;
+            if (address.length() < 26 || address.length() > 35) return false;
+            if (address.charAt(0) != 'B') return false;
+
+            int[] decoded = decodeBase58(address);
+            int[] dd = ru.nettrash.util.Arrays.subarray(decoded, 0, 21);
+            SHA256 sha256 = new SHA256();
+            sha256.update(ru.nettrash.util.Arrays.toByteArray(dd));
+            byte[] d1 = sha256.digest();
+            sha256 = new SHA256();
+            sha256.update(d1);
+            byte[] d2 = sha256.digest();
+            int[] id2 = ru.nettrash.util.Arrays.toUnsignedByteArray(d2);
+            if (decoded[21] != id2[0] ||
+                    decoded[22] != id2[1] ||
+                    decoded[23] != id2[2] ||
+                    decoded[24] != id2[3]) {
+                return false;
+            }
+
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     public static String forKey(int[] key) throws Exception {
         SHA256 sha256 = new SHA256();
         sha256.update(ru.nettrash.util.Arrays.toByteArray(key));

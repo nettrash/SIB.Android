@@ -122,4 +122,9 @@
 
     <string name="sellRateEmpty">Курс продажи на загружен. Попробуйте позднее.</string>
     <string name="buyRateEmpty">Курс покупки не загружен. Попробуйте позднее.</string>
+
+    <string name="amountBigError">Сумма превышает доступный баланс.</string>
+    <string name="Fullfill">Исполнить</string>
+    <string name="otherSell">Отправка </string>
+    <string name="otherSellMessage">"Адрес получения: %s\nСумма к получению: %.8f\nСумма к отправке: %.8f SIB\nКомиссия: %.8f SIB"</string>
 </resources>
