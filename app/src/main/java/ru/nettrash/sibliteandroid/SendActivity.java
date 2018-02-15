@@ -273,16 +273,19 @@ public class SendActivity extends BaseActivity {
                     if (contents.toLowerCase().startsWith("bitcoin:") ||
                             contents.toLowerCase().startsWith("biocoin:")) {
                         try {
-                            Uri url = Uri.parse(contents.contains("coin://") ? contents : contents.replace("coin:", "coin://"));
-                            if (sibAddress.verify(url.getHost())) {
-                                otherCurrency = contents.toLowerCase().startsWith("bitcoin:") ? "BTC" : "BIO";
-                                otherAddress = url.getHost();
-                                otherAmount = Double.valueOf(url.getQueryParameter("amount"));
-
-                                findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
-
-                                refreshOtherSellRate();
+                            Uri url = Uri.parse(contents.contains("://") ? contents : contents.replace(":", "://"));
+                            if (sibAddress.verifyBIO(url.getHost())) {
+                                otherCurrency = "BIO";
                             }
+                            if (sibAddress.verifyBTC(url.getHost())) {
+                                otherCurrency = "BTC";
+                            }
+                            otherAddress = url.getHost();
+                            otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+
+                            findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+
+                            refreshOtherSellRate();
                         } catch (Exception ex) {
 
                         }
@@ -540,10 +543,9 @@ public class SendActivity extends BaseActivity {
                     otherAmountSIB = otherAmount / otherSellRate;
                     otherCommissionSIB = otherAmountSIB * 0.001;
 
-                    if (sibApplication.model.getBalance() < otherAmountSIB + otherCommissionSIB) {
+                    if (sibApplication.model.getBalance() > otherAmountSIB + otherCommissionSIB) {
 
-
-                        String title = getResources().getString(R.string.otherSell) + otherCurrency;
+                        String title = getResources().getString(R.string.otherSell) + " " + otherCurrency;
                         String message = String.format(getResources().getString(R.string.otherSellMessage),
                                 otherAddress, otherAmount, otherAmountSIB, otherCommissionSIB);
 
