@@ -106,7 +106,7 @@ public class RootActivity extends BaseActivity {
         // are available.
         delayedHide(100);
 
-        if (sibApplication.model.firstRun()) {
+        if (sibApplication.model.firstRun() || sibApplication.needSetPIN()) {
             //create first address
             Intent intent = new Intent(this, InitializeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

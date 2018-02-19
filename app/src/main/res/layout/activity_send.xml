@@ -41,6 +41,8 @@
             android:gravity="center_horizontal|center_vertical"
             android:textSize="8pt"
             android:inputType="text"
+            android:textColor="@color/colorDark"
+            android:textColorHint="@color/colorDarkHint"
             android:hint="@string/hintAddress"
             android:textColorHighlight="@color/colorWhite"/>
 
@@ -60,6 +62,8 @@
                 android:gravity="center_horizontal|center_vertical"
                 android:textSize="8pt"
                 android:inputType="numberDecimal"
+                android:textColor="@color/colorDark"
+                android:textColorHint="@color/colorDarkHint"
                 android:hint="@string/hintAmount"
                 android:textColorHighlight="@color/colorWhite"/>
 
@@ -73,6 +77,8 @@
                 android:gravity="center_horizontal|center_vertical"
                 android:textSize="8pt"
                 android:inputType="numberDecimal"
+                android:textColor="@color/colorDark"
+                android:textColorHint="@color/colorDarkHint"
                 android:hint="@string/hintCommission"
                 android:text="0.0001"
                 android:textColorHighlight="@color/colorWhite"/>

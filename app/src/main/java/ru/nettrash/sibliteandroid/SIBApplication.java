@@ -39,6 +39,20 @@ public final class SIBApplication extends Application {
         return !sPIN.equals("") && enteredPIN.equals(storedPIN);
     }
 
+    public boolean needSetPIN() {
+        try {
+            SharedPreferences preferences = this.getSharedPreferences("SIBPreferences", Context.MODE_PRIVATE);
+            String storedPIN = preferences.getString("PIN", "");
+            if (storedPIN == null) return true;
+            if (storedPIN.equals("")) return true;
+            String decodedPIN = new String(Base64.decode(storedPIN, Base64.NO_WRAP));
+            if ("1234NETTRASH_SIB_WALLET".length() != decodedPIN.length()) return true;
+        } catch (Exception ex) {
+            return true;
+        }
+        return false;
+    }
+
     @NonNull
     @Contract(pure = true)
     public String getCurrencySymbol() {

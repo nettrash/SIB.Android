@@ -9,6 +9,7 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
     <color name="colorDark">#434343</color>
+    <color name="colorDarkHint">#88434343</color>
 
     <color name="colorTextEditorBackground">#88FFFFFF</color>
     <color name="colorButtonBackground">#19000000</color>

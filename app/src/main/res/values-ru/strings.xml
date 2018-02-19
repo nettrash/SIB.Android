@@ -10,6 +10,7 @@
     <string name="titleActivitySend">Червонец - Отправить</string>
     <string name="titleActivityHistory">Червонец - История</string>
     <string name="titleActivitySettings">Червонец - Настройки</string>
+    <string name="titleActivityEnterAmount">Червонец - ввод суммы</string>
 
     <string name="alertDialogErrorTitle">Ошибка</string>
     <string name="alertDialogSetPINError">Неверный PIN. Верный PIN содержит 4 цифры.</string>
@@ -127,4 +128,7 @@
     <string name="Fullfill">Исполнить</string>
     <string name="otherSell">Отправка </string>
     <string name="otherSellMessage">"Адрес получения: %s\nСумма к получению: %.8f\nСумма к отправке: %.8f SIB\nКомиссия: %.8f SIB"</string>
+
+    <string name="enterAmount">Сумма в </string>
+    <string name="btnSetAmountText">Установить сумму</string>
 </resources>

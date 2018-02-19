@@ -10,6 +10,7 @@
     <string name="titleActivitySend">SIBCoin - send</string>
     <string name="titleActivityHistory">SIBCoin - history</string>
     <string name="titleActivitySettings">SIBCoin - settings</string>
+    <string name="titleActivityEnterAmount">SIBCoin - enter amount</string>
 
     <string name="alertDialogErrorTitle">Error</string>
     <string name="alertDialogSetPINError">Incorrect PIN. The correct PIN consists of 4 digits</string>
@@ -127,4 +128,7 @@
     <string name="Fullfill">Fullfill</string>
     <string name="otherSell">Sending </string>
     <string name="otherSellMessage">"Receipt address: %s\nAmount receivable: %.8f\nAmount to be sent: %.8f SIB\nCommission: %.8f SIB"</string>
+
+    <string name="enterAmount">Amount in </string>
+    <string name="btnSetAmountText">Set amount</string>
 </resources>

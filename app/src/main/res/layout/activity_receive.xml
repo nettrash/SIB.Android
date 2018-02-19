@@ -40,6 +40,8 @@
             android:textAlignment="gravity"
             android:gravity="center_horizontal|center_vertical"
             android:textSize="8pt"
+            android:textColor="@color/colorDark"
+            android:textColorHint="@color/colorDarkHint"
             android:textColorHighlight="@color/colorWhite"/>
 
         <EditText
@@ -53,6 +55,8 @@
             android:gravity="center_horizontal|center_vertical"
             android:textSize="8pt"
             android:inputType="numberDecimal"
+            android:textColor="@color/colorDark"
+            android:textColorHint="@color/colorDarkHint"
             android:hint="@string/hintAmount"
             android:textColorHighlight="@color/colorWhite"/>
 

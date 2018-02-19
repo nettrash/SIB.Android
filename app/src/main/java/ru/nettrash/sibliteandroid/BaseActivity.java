@@ -84,10 +84,10 @@ class BaseActivity extends Activity {
         super.onResume();
 
         try {
-            if (!sibApplication.model.firstRun()) {
+            if (!sibApplication.model.firstRun() && !sibApplication.needSetPIN() && !setupActivity()) {
                 String lastStoppedActivityClassName = sibApplication.getLastStoppedActivityClassName();
-                if (lastStoppedActivityClassName.equals(this.getClass().getName()) || lastStoppedActivityClassName.equals("")) {
-                    if (sibApplication.needCheckPIN()) {
+                if (lastStoppedActivityClassName.equals(this.getClass().getName()) || lastStoppedActivityClassName.equals("") || lastStoppedActivityClassName.equals("ru.nettrash.sibliteandroid.RootActivity")) {
+                    if (sibApplication.needCheckPIN() || lastStoppedActivityClassName.equals("ru.nettrash.sibliteandroid.RootActivity")) {
                         checkPIN();
                     }
                 }
@@ -100,7 +100,7 @@ class BaseActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (!sibApplication.model.firstRun()) {
+        if (!sibApplication.model.firstRun() && !sibApplication.needSetPIN() && !setupActivity()) {
             sibApplication.setLastStopDate(new Date());
             sibApplication.setLastStoppedActivityClassName(this.getClass().getName());
         }
@@ -109,7 +109,7 @@ class BaseActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (!sibApplication.model.firstRun()) {
+        if (!sibApplication.model.firstRun() && !sibApplication.needSetPIN() && !setupActivity()) {
             sibApplication.setLastStopDate(new Date());
             sibApplication.setLastStoppedActivityClassName(this.getClass().getName());
         }
@@ -234,5 +234,12 @@ class BaseActivity extends Activity {
     private void delayedPINFocus(int delayMillis) {
         mPINFocusHandler.removeCallbacks(mPINFocusRunnable);
         mPINFocusHandler.postDelayed(mPINFocusRunnable, delayMillis);
+    }
+
+    private boolean setupActivity() {
+        return
+                this.getClass().getName().equals("ru.nettrash.sibliteandroid.InitializeActivity") ||
+                        this.getClass().getName().equals("ru.nettrash.sibliteandroid.SetPINActivity") ||
+                        this.getClass().getName().equals("ru.nettrash.sibliteandroid.VerifyPINActivity");
     }
 }

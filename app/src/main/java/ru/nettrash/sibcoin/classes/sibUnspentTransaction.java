@@ -33,4 +33,5 @@ public final class sibUnspentTransaction {
         this.Script = object.getString("Script");
 
     }
+
 }

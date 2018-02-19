@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
+import io.card.payment.CardIOActivity;
+import io.card.payment.CreditCard;
 import ru.nettrash.sibcoin.classes.sibHistoryItem;
 import ru.nettrash.sibcoin.classes.sibUnspentTransaction;
 import ru.nettrash.sibcoin.database.Address;
@@ -59,6 +61,9 @@ import ru.nettrash.util.Arrays;
 import static android.content.ContentValues.TAG;
 
 public class SendActivity extends BaseActivity {
+
+    private static final int REQUEST_CODE_ENTER_AMOUNT = 1000;
+    private static final int REQUEST_CODE_SCAN = 49374;
 
     private static final boolean AUTO_HIDE = true;
 
@@ -244,57 +249,126 @@ public class SendActivity extends BaseActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (resultCode == RESULT_OK) {
-            String contents = intent.getStringExtra("SCAN_RESULT");
-            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+        if (requestCode == REQUEST_CODE_SCAN) {
+            if (resultCode == RESULT_OK) {
+                String contents = intent.getStringExtra("SCAN_RESULT");
+                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
-            if (format.equals("QR_CODE")) {
-                if (sibAddress.verify(contents)) {
-                    mAddressView.setText(contents);
-                    mAmountView.requestFocus();
-                } else {
-                    if (contents.toLowerCase().startsWith("sibcoin:")) {
-                        try {
-                            Uri url = Uri.parse(contents.startsWith("sibcoin://") ? contents : contents.replace("sibcoin:", "sibcoin://"));
-                            if (sibAddress.verify(url.getHost())) {
-                                mAddressView.setText(url.getHost());
-                                String amount = url.getQueryParameter("amount");
-                                if (amount != null && !amount.equalsIgnoreCase("")) {
-                                    mAmountView.setText(amount);
-                                    mCommissionView.requestFocus();
-                                } else {
-                                    mAmountView.requestFocus();
-                                }
-                            }
-                        } catch (Exception ex) {
+                if (format.equals("QR_CODE")) {
+                    if (processSIB(contents)) return;
+                    if (processBIO(contents)) return;
+                    if (processBTC(contents)) return;
+                }
 
-                        }
-                    }
-                    if (contents.toLowerCase().startsWith("bitcoin:") ||
-                            contents.toLowerCase().startsWith("biocoin:")) {
-                        try {
-                            Uri url = Uri.parse(contents.contains("://") ? contents : contents.replace(":", "://"));
-                            if (sibAddress.verifyBIO(url.getHost())) {
-                                otherCurrency = "BIO";
-                            }
-                            if (sibAddress.verifyBTC(url.getHost())) {
-                                otherCurrency = "BTC";
-                            }
-                            otherAddress = url.getHost();
-                            otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+            } else if (resultCode == RESULT_CANCELED) {
+            }
+        }
 
-                            findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
-
-                            refreshOtherSellRate();
-                        } catch (Exception ex) {
-
-                        }
-                    }
+        if (requestCode == REQUEST_CODE_ENTER_AMOUNT) {
+            if (intent != null && intent.hasExtra(EnterAmountActivity.EXTRA_AMOUNT_RESULT)) {
+                otherAmount = intent.getDoubleExtra(EnterAmountActivity.EXTRA_AMOUNT_RESULT, 0.00000000);
+                if (otherAmount != null && otherAmount > 0.00000000) {
+                    findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+                    refreshOtherSellRate();
                 }
             }
-
-        } else if (resultCode == RESULT_CANCELED) {
         }
+    }
+
+    private boolean processSIB(String contents) {
+        if (sibAddress.verify(contents)) {
+            mAddressView.setText(contents);
+            mAmountView.requestFocus();
+            return true;
+        } else {
+            if (contents.toLowerCase().startsWith("sibcoin:")) {
+                try {
+                    Uri url = Uri.parse(contents.startsWith("sibcoin://") ? contents : contents.replace("sibcoin:", "sibcoin://"));
+                    if (sibAddress.verify(url.getHost())) {
+                        mAddressView.setText(url.getHost());
+                        String amount = url.getQueryParameter("amount");
+                        if (amount != null && !amount.equalsIgnoreCase("")) {
+                            mAmountView.setText(amount);
+                            mCommissionView.requestFocus();
+                        } else {
+                            mAmountView.requestFocus();
+                        }
+                        return true;
+                    }
+                } catch (Exception ex) {
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean processBIO(String contents) {
+        if (sibAddress.verifyBIO(contents)) {
+            otherCurrency = "BIO";
+            otherAddress = contents;
+            doEnterAmount();
+            return true;
+        } else {
+            if (contents.toLowerCase().startsWith("biocoin:")) {
+                try {
+                    Uri url = Uri.parse(contents.contains("://") ? contents : contents.replace(":", "://"));
+                    if (!sibAddress.verifyBIO(url.getHost())) return false;
+                    otherCurrency = "BIO";
+                    otherAddress = url.getHost();
+                    otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+
+                    if (otherAmount != null && otherAmount > 0) {
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+                        refreshOtherSellRate();
+                    } else {
+                        doEnterAmount();
+                    }
+
+                    return true;
+                } catch (Exception ex) {
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean processBTC(String contents) {
+        if (sibAddress.verifyBTC(contents)) {
+            otherCurrency = "BTC";
+            otherAddress = contents;
+            doEnterAmount();
+            return true;
+        } else {
+            if (contents.toLowerCase().startsWith("bitcoin:")) {
+                try {
+                    Uri url = Uri.parse(contents.contains("://") ? contents : contents.replace(":", "://"));
+                    if (!sibAddress.verifyBTC(url.getHost())) return false;
+                    otherCurrency = "BTC";
+                    otherAddress = url.getHost();
+                    otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+
+                    if (otherAmount != null && otherAmount > 0) {
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+                        refreshOtherSellRate();
+                    } else {
+                        doEnterAmount();
+                    }
+
+                    return true;
+                } catch (Exception ex) {
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private void doEnterAmount() {
+        Intent intent = new Intent(SendActivity.this, EnterAmountActivity.class);
+        intent.putExtra(EnterAmountActivity.EXTRA_OTHER_CURRENCY, otherCurrency);
+        startActivityForResult(intent, REQUEST_CODE_ENTER_AMOUNT);
     }
 
     private void hide() {
