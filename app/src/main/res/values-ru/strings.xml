@@ -131,4 +131,6 @@
 
     <string name="enterAmount">Сумма в </string>
     <string name="btnSetAmountText">Установить сумму</string>
+
+    <string name="availableBalance">Доступно</string>
 </resources>

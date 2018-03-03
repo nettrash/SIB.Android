@@ -423,6 +423,7 @@ public class SendActivity extends BaseActivity {
                     addresses = addrs.toArray(new String[0]);
 
                 } catch (Exception ex) {
+                    showError(ex);
                     this.cancel(true);
                 }
             }
@@ -443,11 +444,11 @@ public class SendActivity extends BaseActivity {
                 super.onPostExecute(result);
                 if (result != null) {
                     try {
-
                         sibTransaction tx = prepareTransaction(result.toArray(new sibUnspentTransaction[0]));
                         sendTransaction(tx);
 
                     } catch (Exception ex) {
+                        showError(ex);
                         findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
                     }
                 }
@@ -487,6 +488,9 @@ public class SendActivity extends BaseActivity {
 			} else {
                 break;
             }
+        }
+        if (spent - amount - commission < 0) {
+            throw new Exception(getResources().getString(R.string.amountBigError) + "\n" + getResources().getString(R.string.availableBalance) + " " + String.format("%.8f SIB", spent));
         }
         tx.addChange(spent - amount - commission);
         return tx;

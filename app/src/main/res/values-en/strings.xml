@@ -131,4 +131,6 @@
 
     <string name="enterAmount">Amount in </string>
     <string name="btnSetAmountText">Set amount</string>
+
+    <string name="availableBalance">Available</string>
 </resources>
