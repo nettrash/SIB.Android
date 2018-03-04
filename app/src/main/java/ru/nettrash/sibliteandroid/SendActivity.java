@@ -180,6 +180,7 @@ public class SendActivity extends BaseActivity {
         mScanView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                self.hideKeyboard();
                 try {
                     self.requestPermissions(new String[] { Manifest.permission.CAMERA }, 0);
                 } catch (Exception ex) {
@@ -347,8 +348,11 @@ public class SendActivity extends BaseActivity {
                     if (!sibAddress.verifyBTC(url.getHost())) return false;
                     otherCurrency = "BTC";
                     otherAddress = url.getHost();
-                    otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+                    try {
+                        otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+                    } catch (Exception ex) {
 
+                    }
                     if (otherAmount != null && otherAmount > 0) {
                         findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
                         refreshOtherSellRate();
