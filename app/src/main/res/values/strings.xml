@@ -133,4 +133,6 @@
     <string name="btnSetAmountText">Set amount</string>
 
     <string name="availableBalance">Available</string>
+
+    <string name="invoice_unavailable_for_process">Unavailable for process. Sorry.</string>
 </resources>

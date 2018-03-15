@@ -133,4 +133,6 @@
     <string name="btnSetAmountText">Установить сумму</string>
 
     <string name="availableBalance">Доступно</string>
+
+    <string name="invoice_unavailable_for_process">Недоступно для исполнения. Извините.</string>
 </resources>

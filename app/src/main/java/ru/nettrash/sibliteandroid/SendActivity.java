@@ -84,6 +84,7 @@ public class SendActivity extends BaseActivity {
     private Double otherSellRate;
     private Double otherAmountSIB;
     private Double otherCommissionSIB;
+    private ru.nettrash.sibcoin.bitpay.Invoice otherInvoice;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -344,25 +345,45 @@ public class SendActivity extends BaseActivity {
         } else {
             if (contents.toLowerCase().startsWith("bitcoin:")) {
                 try {
-                    Uri url = Uri.parse(contents.contains("://") ? contents : contents.replace(":", "://"));
-                    if (!sibAddress.verifyBTC(url.getHost())) return false;
-                    otherCurrency = "BTC";
-                    otherAddress = url.getHost();
-                    try {
-                        otherAmount = Double.valueOf(url.getQueryParameter("amount"));
-                    } catch (Exception ex) {
-
-                    }
-                    if (otherAmount != null && otherAmount > 0) {
-                        findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
-                        refreshOtherSellRate();
+                    String src = contents.contains("://") ? contents : contents.replace(":", "://");
+                    src = src.contains(":?") ? src.replace(":?", "://localhost?") : src;
+                    Uri url = Uri.parse(src);
+                    if (url.getQueryParameterNames().contains("r")) {
+                        String r = url.getQueryParameter("r");
+                        if (ru.nettrash.sibcoin.bitpay.Invoice.canParse(r)) {
+                            otherInvoice = new ru.nettrash.sibcoin.bitpay.Invoice(r);
+                            if (!otherInvoice.isAvailibleForProcess()) {
+                                String msg = String.format("BitPay Invoice\n\n%s\n\n%s", otherInvoice.invoiceInformation(), getResources().getString(R.string.invoice_unavailable_for_process));
+                                showMessage(msg);
+                                return false;
+                            }
+                            otherCurrency = "BTC";
+                            otherAddress = otherInvoice.bitcoinAddress;
+                            otherAmount = otherInvoice.btcDue;
+                            findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+                            refreshOtherSellRate();
+                            return true;
+                        }
                     } else {
-                        doEnterAmount();
+                        if (!sibAddress.verifyBTC(url.getHost())) return false;
+                        otherCurrency = "BTC";
+                        otherAddress = url.getHost();
+                        try {
+                            otherAmount = Double.valueOf(url.getQueryParameter("amount"));
+                        } catch (Exception ex) {
+
+                        }
+                        if (otherAmount != null && otherAmount > 0) {
+                            findViewById(R.id.fullscreen_wait).setVisibility(View.VISIBLE);
+                            refreshOtherSellRate();
+                        } else {
+                            doEnterAmount();
+                        }
+
+                        return true;
                     }
-
-                    return true;
                 } catch (Exception ex) {
-
+                    showError(ex);
                 }
             }
         }
@@ -627,32 +648,35 @@ public class SendActivity extends BaseActivity {
 
                     if (sibApplication.model.getBalance() > otherAmountSIB + otherCommissionSIB) {
 
-                        String title = getResources().getString(R.string.otherSell) + " " + otherCurrency;
-                        String message = String.format(getResources().getString(R.string.otherSellMessage),
-                                otherAddress, otherAmount, otherAmountSIB, otherCommissionSIB);
+                        if (otherInvoice != null && otherInvoice.isAvailibleForProcess()) {
+                            showMessage(otherInvoice.invoiceInformation());
+                        } else {
+                            String title = getResources().getString(R.string.otherSell) + " " + otherCurrency;
+                            String message = String.format(getResources().getString(R.string.otherSellMessage),
+                                    otherAddress, otherAmount, otherAmountSIB, otherCommissionSIB);
 
-                        AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
-                        builder.setTitle(title)
-                                .setMessage(message)
-                                .setCancelable(false)
-                                .setNeutralButton(R.string.Fullfill,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                                doSell();
-                                            }
-                                        })
-                                .setNegativeButton(R.string.Cancel,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
-                                                dialog.cancel();
-                                            }
-                                        });
+                            AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                            builder.setTitle(title)
+                                    .setMessage(message)
+                                    .setCancelable(false)
+                                    .setNeutralButton(R.string.Fullfill,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    dialog.cancel();
+                                                    doSell();
+                                                }
+                                            })
+                                    .setNegativeButton(R.string.Cancel,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                                                    dialog.cancel();
+                                                }
+                                            });
 
-                        AlertDialog alert = builder.create();
-                        alert.show();
-
+                            AlertDialog alert = builder.create();
+                            alert.show();
+                        }
 
                     } else {
                         findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
