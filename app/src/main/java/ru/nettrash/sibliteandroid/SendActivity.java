@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.arch.core.util.Function;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -649,7 +650,31 @@ public class SendActivity extends BaseActivity {
                     if (sibApplication.model.getBalance() > otherAmountSIB + otherCommissionSIB) {
 
                         if (otherInvoice != null && otherInvoice.isAvailibleForProcess()) {
-                            showMessage(otherInvoice.invoiceInformation());
+                            String title = getResources().getString(R.string.bitpayInvoiceTitle);
+                            String message = String.format(getResources().getString(R.string.bitpayInvoiceMessage),
+                                    otherInvoice.invoiceInformation(), otherAmountSIB, otherCommissionSIB);
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                            builder.setTitle(title)
+                                    .setMessage(message)
+                                    .setCancelable(false)
+                                    .setNeutralButton(R.string.Fullfill,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    dialog.cancel();
+                                                    doPayInvoice();
+                                                }
+                                            })
+                                    .setNegativeButton(R.string.Cancel,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+                                                    dialog.cancel();
+                                                }
+                                            });
+
+                            AlertDialog alert = builder.create();
+                            alert.show();
                         } else {
                             String title = getResources().getString(R.string.otherSell) + " " + otherCurrency;
                             String message = String.format(getResources().getString(R.string.otherSellMessage),
@@ -933,6 +958,221 @@ public class SendActivity extends BaseActivity {
         }
 
         new broadcastTransactionAsyncTask().execute(sign);
+    }
+
+    private void doPayInvoice() {
+        hideKeyboard();
+
+        final class getAddressForPaymentAsyncTask extends AsyncTask<Void, Void, String> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected String doInBackground(Void... params) {
+                try {
+                    return api.getNewBitPayAddress();
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+            }
+
+            @Override
+            protected void onCancelled(String result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+            }
+        }
+
+        getAddressForPaymentAsyncTask taskNewAddress = new getAddressForPaymentAsyncTask();
+        taskNewAddress.execute();
+
+        try {
+            final String SIBAddress = taskNewAddress.get();
+            prepareTransactionForInvoicePayment(SIBAddress, otherAmountSIB);
+        } catch (Exception ex) {
+            showError(ex);
+            findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void prepareTransactionForInvoicePayment(final String Address, final Double amountSIB) {
+
+        final class unspentTransactionsAsyncTask extends AsyncTask<Void, Void, ArrayList<sibUnspentTransaction>> {
+
+            protected sibAPI api = new sibAPI();
+            protected String[] addresses = new String[0];
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                ArrayList<String> addrs = new ArrayList<String>();
+                try {
+
+                    for (Address a : sibApplication.model.getAddresses()) {
+                        addrs.add(a.getAddress());
+                    }
+
+                    addresses = addrs.toArray(new String[0]);
+
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+            }
+
+            @Nullable
+            @Override
+            protected ArrayList<sibUnspentTransaction> doInBackground(Void... params) {
+                try {
+                    return api.getUnspentTransactions(addresses);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<sibUnspentTransaction> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    try {
+
+                        sibTransaction tx = prepareTransaction(result.toArray(new sibUnspentTransaction[0]), amountSIB, Address);
+                        payInvoice(tx, amountSIB, Address);
+
+                    } catch (Exception ex) {
+                        findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        hideKeyboard();
+
+        new unspentTransactionsAsyncTask().execute();
+
+    }
+
+    private void payInvoice(final sibTransaction tx, final Double amountSIB, final String Address) throws Exception {
+        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
+
+        final class payInvoiceAsyncTask extends AsyncTask<int[], Void, sibBroadcastTransactionResult> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Nullable
+            @Override
+            protected sibBroadcastTransactionResult doInBackground(int[]... params) {
+                try {
+                    return api.payInvoice(otherInvoice.source, params[0], Address, amountSIB, otherAddress, otherAmount);
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(sibBroadcastTransactionResult result) {
+                super.onPostExecute(result);
+                String message = "";
+                if (result.IsBroadcasted) {
+                    message = getResources().getString(R.string.successBroadcasted) + " " + result.TransactionId;
+                } else {
+                    message = result.Message;
+                }
+
+                final String txid = result.TransactionId;
+
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                builder.setTitle(R.string.alertDialogBroadcastTitle)
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNeutralButton(R.string.CopyToClipboard,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText(getResources().getString(R.string.sibTransactionId), txid);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+                                        builder.setTitle(R.string.alertDialogClipboardTitle)
+                                                .setMessage(R.string.alertDialogClipboardMessage)
+                                                .setCancelable(false)
+                                                .setNegativeButton(R.string.OK,
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();
+                                    }
+                                })
+                        .setNegativeButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+
+            @Override
+            protected void onCancelled(sibBroadcastTransactionResult result) {
+                super.onCancelled(result);
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                findViewById(R.id.fullscreen_wait).setVisibility(View.INVISIBLE );
+            }
+        }
+
+        new payInvoiceAsyncTask().execute(sign);
     }
 
 }

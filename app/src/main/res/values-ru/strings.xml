@@ -135,4 +135,7 @@
     <string name="availableBalance">Доступно</string>
 
     <string name="invoice_unavailable_for_process">Недоступно для исполнения. Извините.</string>
+
+    <string name="bitpayInvoiceTitle">Счёт BitPay</string>
+    <string name="bitpayInvoiceMessage">\n%s\nСумма к отправке: %.8f SIB\nКомиссия: %.8f SIB\n</string>
 </resources>

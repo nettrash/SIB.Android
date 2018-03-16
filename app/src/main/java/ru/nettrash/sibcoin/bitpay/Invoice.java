@@ -205,15 +205,14 @@ public class Invoice {
 
     public String invoiceInformation() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n");
-        sb.append(String.format("%s\n", itemDesc));
+        sb.append(String.format("%s\n\n", itemDesc));
         sb.append("");
-        sb.append(String.format(Locale.getDefault(), "%.2f %s\n", price, currency));
-        sb.append(String.format(Locale.getDefault(), "%.8f BTC\n", btcDue));
+        sb.append(String.format(Locale.getDefault(), "\t%.2f %s\n", price, currency));
+        sb.append(String.format(Locale.getDefault(), "\t%.8f BTC\n\n", btcDue));
         sb.append("");
-        sb.append(String.format(Locale.getDefault(), "1 BTC = %.2f %s\n", rate, currency));
+        sb.append(String.format(Locale.getDefault(), "\t1 BTC = %.2f %s\n", rate, currency));
         sb.append("");
-        sb.append(String.format("%s\n", status.toUpperCase()));
+        sb.append(String.format("\n\t%s\n", status.toUpperCase()));
         sb.append("");
         return sb.toString();
     }

@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import javax.net.ssl.HostnameVerifier;
@@ -403,5 +404,46 @@ public final class sibAPI {
             throw new Exception("Error process buy");
         }
     }
+
+    @NonNull
+    public String getNewBitPayAddress() throws Exception {
+        String url = urlAPIRoot + "/getNewBitPayAddress";
+
+        String sResponse = _sendPOST(url, "");
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("GetNewBitPayAddressResult");
+        if (result.getBoolean("Success")) {
+            return result.getString("Address");
+        } else {
+            throw new Exception("Unable to get SIB address for payment.");
+        }
+    }
+
+    public sibBroadcastTransactionResult payInvoice(String invoice, int[] sign, String sibAddress, Double sibAmount, String otherAddress, Double otherAmount) throws Exception {
+        String url = urlAPIRoot + "/payInvoice";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("invoice", Base64.encodeToString(invoice.getBytes(), Base64.NO_WRAP));
+        postDataParams.put("tx", Base64.encodeToString(Arrays.toByteArray(sign), Base64.NO_WRAP));
+        postDataParams.put("address", sibAddress);
+        postDataParams.put("amount", sibAmount);
+        postDataParams.put("otherAddress", otherAddress);
+        postDataParams.put("otherAmount", otherAmount);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("PayInvoiceResult");
+        sibBroadcastTransactionResult retVal = new sibBroadcastTransactionResult();
+        retVal.IsBroadcasted = result.getBoolean("Success");
+        if (result.getBoolean("Success")) {
+            retVal.TransactionId = result.getString("TransactionId");
+            //retVal.BTCTransactionId = result.getString("BTCTransactionId");
+            retVal.Message = result.getString("Message");
+        } else {
+            retVal.Message = result.getString("Message");
+        }
+        return retVal;
+    }
+
 }
 
