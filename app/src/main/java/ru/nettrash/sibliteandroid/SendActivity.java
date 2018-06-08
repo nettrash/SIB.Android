@@ -161,6 +161,32 @@ public class SendActivity extends BaseActivity {
                 return false;
             }
         });
+
+        mAddressView.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (sibAddress.verifyBIO(s.toString())) {
+                    processBIO(s.toString());
+                    mAddressView.setText("");
+                }
+                if (sibAddress.verifyBTC(s.toString())) {
+                    processBTC(s.toString());
+                    mAddressView.setText("");
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+            }
+        });
+
         mAmountView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -170,6 +196,7 @@ public class SendActivity extends BaseActivity {
                 return false;
             }
         });
+
         mCommissionView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -179,6 +206,7 @@ public class SendActivity extends BaseActivity {
                 return false;
             }
         });
+
         mScanView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -189,12 +217,22 @@ public class SendActivity extends BaseActivity {
                 }
             }
         });
+
         mSendView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 doSend();
             }
         });
+
+        /*Intent intent = getIntent();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri uri = intent.getData();
+            String contents = uri.toString();
+            if (processSIB(contents)) return;
+            if (processBIO(contents)) return;
+            if (processBTC(contents)) return;
+        }*/
     }
 
     @Override

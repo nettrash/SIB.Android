@@ -7,7 +7,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 27
         versionCode 10
-        versionName "1.8"
+        versionName "1.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -58,9 +58,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile 'org.jetbrains:annotations-java5:15.0'
+    implementation 'org.jetbrains:annotations-java5:15.0'
 
-    compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'
-    compile 'com.google.zxing:core:3.2.1'
-    compile 'io.card:android-sdk:5.5.1'
+    implementation 'com.journeyapps:zxing-android-embedded:3.0.2@aar'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'io.card:android-sdk:5.5.1'
 }
