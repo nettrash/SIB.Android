@@ -97,7 +97,7 @@ public final class sibAddress {
         try {
             if (address == null) return false;
             if (address.length() < 26 || address.length() > 35) return false;
-            if (address.charAt(0) != 'S') return false;
+            if (address.charAt(0) != 'S' && address.charAt(0) != 'H') return false;
 
             int[] decoded = decodeBase58(address);
             int[] dd = ru.nettrash.util.Arrays.subarray(decoded, 0, 21);
@@ -225,8 +225,11 @@ public final class sibAddress {
 
     static int[] spendToScript(String address) throws Exception {
         int[] addrBytes = decodeBase58(address);
+        int version = addrBytes[0];
         int[] retVal = new int[0];
-        retVal = ru.nettrash.util.Arrays.append(retVal, 118); //OP_DUP
+        if (version != 40) {
+            retVal = ru.nettrash.util.Arrays.append(retVal, 118); //OP_DUP
+        }
         retVal = ru.nettrash.util.Arrays.append(retVal, 169); //HASH_160
         int cnt = addrBytes.length - 5;
         if (cnt < 76) {
@@ -250,9 +253,12 @@ public final class sibAddress {
             }
         }
         retVal = ru.nettrash.util.Arrays.append(retVal, addrBytes, 1, addrBytes.length-5);
-        retVal = ru.nettrash.util.Arrays.append(retVal, 136); //OP_EQUALVERIFY
-        retVal = ru.nettrash.util.Arrays.append(retVal, 172); //OP_CHECKSIG
-
+        if (version != 40) {
+            retVal = ru.nettrash.util.Arrays.append(retVal, 136); //OP_EQUALVERIFY
+            retVal = ru.nettrash.util.Arrays.append(retVal, 172); //OP_CHECKSIG
+        } else {
+            retVal = ru.nettrash.util.Arrays.append(retVal, 135); //OP_EQUAL
+        }
         return retVal;
     }
 

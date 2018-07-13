@@ -13,6 +13,8 @@ public class sibAddressUnitTest {
     public void sibAddressVerify_isCorrect() throws Exception {
 
         assertEquals(true, sibAddress.verify("SNmdtyvBJ88kg1r7vPSYMzt7yV4tkvdeFp"));
+        assertEquals(true, sibAddress.verify("HGnLjMEP3He2iVgm6ogs1ZrRDbmgZW83TA"));
+        sibAddress.spendToScript("HGnLjMEP3He2iVgm6ogs1ZrRDbmgZW83TA");
         assertEquals(false, sibAddress.verify("16TFkJYqK73JPbdwMeteGbNbMddVWJP5rG"));
     }
 
