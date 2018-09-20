@@ -360,6 +360,25 @@ public final class sibAPI {
         }
     }
 
+    @Contract(pure = true)
+    public double getBuyRateWithAmount(String currency, Double amount) throws Exception {
+        String url = urlAPIRoot + "/buyRateWithAmount";
+
+        JSONObject postDataParams = new JSONObject();
+        postDataParams.put("currency", currency);
+        postDataParams.put("amount", amount);
+
+        String sResponse = _sendPOST(url, postDataParams.toString());
+        JSONObject resp = new JSONObject(sResponse);
+        JSONObject result = resp.getJSONObject("BuyRateWithAmountResult");
+
+        if (result.getBoolean("Success")) {
+            return result.getDouble("Rate");
+        } else {
+            throw new Exception("Error get buy rate");
+        }
+    }
+
     @NonNull
     @Contract(pure = true)
     public sibBuyState processBuy(String currency, Double amountSIB, Double amount, String pan, String exp, String cvv, String account, String address) throws Exception {

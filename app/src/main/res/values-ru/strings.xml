@@ -138,4 +138,6 @@
 
     <string name="bitpayInvoiceTitle">Счёт BitPay</string>
     <string name="bitpayInvoiceMessage">\n%s\nСумма к отправке: %.8f SIB\nКомиссия: %.8f SIB\n</string>
+
+    <string name="sellInformation">Будет доступно в будущих обновлениях</string>
 </resources>

@@ -556,12 +556,18 @@ public class SendActivity extends BaseActivity {
         if (spent - amount - commission < 0) {
             throw new Exception(getResources().getString(R.string.amountBigError) + "\n" + getResources().getString(R.string.availableBalance) + " " + String.format("%.8f SIB", spent));
         }
-        tx.addChange(spent - amount - commission);
+        if (spent - amount - commission > 0) {
+            tx.addChange(spent - amount - commission);
+        }
         return tx;
     }
 
     private void sendTransaction(sibTransaction tx) throws Exception {
-        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        sibWallet change = tx.getChange();
+        if (change != null && sibAddress.verify(change.Address) && change.PrivateKey != null &&
+                change.PublicKey != null && change.Address != null && change.WIF != null) {
+            sibApplication.model.storeWallet(change, (short) 1);
+        }
         int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
 
         final SendActivity self = this;
@@ -902,12 +908,18 @@ public class SendActivity extends BaseActivity {
                 break;
             }
         }
-        tx.addChange(spent - amount - otherCommissionSIB);
+        if (spent - amount - otherCommissionSIB > 0) {
+            tx.addChange(spent - amount - otherCommissionSIB);
+        }
         return tx;
     }
 
     private void sendOtherTransaction(sibTransaction tx) throws Exception {
-        sibApplication.model.storeWallet(tx.getChange(), (short)1);
+        sibWallet change = tx.getChange();
+        if (change != null && sibAddress.verify(change.Address) && change.PrivateKey != null &&
+                change.PublicKey != null && change.Address != null && change.WIF != null) {
+            sibApplication.model.storeWallet(change, (short) 1);
+        }
         int[] sign = tx.sign(sibApplication.model.getAddresses().toArray(new Address[0]));
 
         final class broadcastTransactionAsyncTask extends AsyncTask<int[], Void, sibBroadcastTransactionResult> {

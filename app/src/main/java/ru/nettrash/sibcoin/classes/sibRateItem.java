@@ -34,7 +34,7 @@ public final class sibRateItem {
     public HashMap<String, Object> getHashMap() {
         HashMap retVal = new HashMap<String, Object>();
         if (Currency.toUpperCase().equals("BTC"))
-            retVal.put("rate", String.format("~ %.6f %s", Rate, Currency));
+            retVal.put("rate", String.format("~ %.8f %s", Rate, Currency));
         else
             retVal.put("rate", String.format("~ %.2f %s", Rate, Currency));
 

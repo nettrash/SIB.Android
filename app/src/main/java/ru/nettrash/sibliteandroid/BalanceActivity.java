@@ -653,6 +653,61 @@ public class BalanceActivity extends BaseActivity {
         new buyRateAsyncTask().execute();
     }
 
+    private void refreshBuyRateWithAmount(Double amount)  {
+        final class buyRateAsyncTask extends AsyncTask<Double, Void, Double> {
+
+            protected sibAPI api = new sibAPI();
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                //mBuyRate.setText(R.string.buyraterefresh);
+            }
+
+            @Nullable
+            @Override
+            protected Double doInBackground(Double... params) {
+                try {
+                    return Double.valueOf(api.getBuyRateWithAmount(sibApplication.getCurrency(), params[0]));
+                } catch (Exception ex) {
+                    this.cancel(true);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Double result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    sibApplication.model.setBuyRate(result);
+                    mBuyRate.setText("1SIB ~ " + String.format("%.2f ", 1.0 / result.doubleValue()) +
+                            sibApplication.getCurrencySymbol() + "\n" +
+                            getResources().getString(R.string.buy_sibtransfer_info));
+                    try {
+                        Double amount = Double.valueOf(mBuyAmount.getText().toString());
+                        mBuyButton.setText(getResources().getString(R.string.buyby) + String.format(" %.2f", amount * (1.0 / sibApplication.model.getBuyRate())) + sibApplication.getCurrencySymbol());
+                    } catch (Exception ex) {
+                        mBuyButton.setText(getResources().getString(R.string.buy));
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled(Double result) {
+                super.onCancelled(result);
+                mBuyRate.setText(R.string.buy_rate_refresh_error);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                mBuyRate.setText(R.string.buy_rate_refresh_error);
+            }
+        }
+
+        new buyRateAsyncTask().execute(amount);
+    }
+
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -946,6 +1001,7 @@ public class BalanceActivity extends BaseActivity {
             public void afterTextChanged(Editable s) {
                 try {
                     Double amount = Double.valueOf(s.toString());
+                    refreshBuyRateWithAmount(amount);
                     mBuyButton.setText(getResources().getString(R.string.buyby) + String.format(" %.2f", amount * (1.0 / sibApplication.model.getBuyRate())) + sibApplication.getCurrencySymbol());
                 } catch (Exception ex) {
                     mBuyButton.setText(getResources().getString(R.string.buy));
@@ -1258,6 +1314,7 @@ public class BalanceActivity extends BaseActivity {
 
     public void segmentButtonClick(View view) {
         delayedHide(100);
+        super.hideKeyboard();
         int nOldSelectedSegment = mSelectedSegment;
         int nNewSelectedSegment = nOldSelectedSegment;
         if (view == mSegmentButtonSIB) {
