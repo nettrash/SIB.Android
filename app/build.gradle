@@ -6,8 +6,8 @@ android {
         applicationId "ru.nettrash.sibliteandroid"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 12
-        versionName "1.11"
+        versionCode 13
+        versionName "1.12"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
