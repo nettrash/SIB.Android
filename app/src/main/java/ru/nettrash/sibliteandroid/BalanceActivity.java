@@ -729,6 +729,9 @@ public class BalanceActivity extends BaseActivity {
 
         setContentView(R.layout.activity_balance);
 
+        //while other unavailable
+        sibApplication.setCurrency("RUB");
+
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
         mBalanceView = findViewById(R.id.balance_value);

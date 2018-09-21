@@ -87,7 +87,6 @@ public class RootActivity extends BaseActivity {
         mVisible = true;
         mContentView = findViewById(R.id.fullscreen_content);
 
-
         // Set up the user interaction to manually show or hide the system UI.
         /*mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
