@@ -140,4 +140,12 @@
     <string name="bitpayInvoiceMessage">\n%s\nСумма к отправке: %.8f SIB\nКомиссия: %.8f SIB\n</string>
 
     <string name="sellInformation">Будет доступно в будущих обновлениях</string>
+
+    <string name="buyCanceled">Покупка отменена. Попробуйте позже.</string>
+    <string name="sellCanceled">Продажа отменена. Попробуйте позже.</string>
+    <string name="unspentCanceled">Не удалось получить непотраченные входы. Попробуй позднее.</string>
+    <string name="sendTransactionCanceled">Не удалось отправить транзакцию в сеть. Попытайся чуть позже.</string>
+
+    <string name="getAddressForPayInvoiceCanceled">Не удалось получить адрес для перевода. Попробуйте позже.</string>
+    <string name="payInvoiceCanceled">Оплата счёта отменена. Попытайтесь позже.</string>
 </resources>

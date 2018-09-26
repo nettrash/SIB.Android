@@ -1233,12 +1233,14 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onCancelled(String result) {
                 super.onCancelled(result);
+                showMessage(getResources().getString(R.string.sellCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                showMessage(getResources().getString(R.string.sellCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
             }
         }
@@ -1302,12 +1304,14 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onCancelled(sibBuyState result) {
                 super.onCancelled(result);
+                showMessage(getResources().getString(R.string.buyCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                showMessage(getResources().getString(R.string.buyCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE);
             }
         }
@@ -1570,6 +1574,7 @@ public class BalanceActivity extends BaseActivity {
                         sendTransaction(tx);
 
                     } catch (Exception ex) {
+                        showMessage(getResources().getString(R.string.sendTransactionCanceled));
                         findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
                     }
                 }
@@ -1578,12 +1583,14 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onCancelled(ArrayList<sibUnspentTransaction> result) {
                 super.onCancelled(result);
+                showMessage(getResources().getString(R.string.unspentCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                showMessage(getResources().getString(R.string.unspentCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
             }
         }
@@ -1695,12 +1702,14 @@ public class BalanceActivity extends BaseActivity {
             @Override
             protected void onCancelled(sibBroadcastTransactionResult result) {
                 super.onCancelled(result);
+                showMessage(getResources().getString(R.string.sendTransactionCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
             }
 
             @Override
             protected void onCancelled() {
                 super.onCancelled();
+                showMessage(getResources().getString(R.string.sendTransactionCanceled));
                 findViewById(R.id.fullscreen_balance_wait).setVisibility(View.INVISIBLE );
             }
         }

@@ -140,4 +140,13 @@
     <string name="bitpayInvoiceMessage">\n%s\nAmount to be sent: %.8f SIB\nCommission: %.8f SIB\n</string>
 
     <string name="sellInformation">Will be available as soon as possible</string>
+
+    <string name="buyCanceled">Purchase canceled. Please try again later.</string>
+    <string name="sellCanceled">Sell canceled. Please try again later.</string>
+    <string name="unspentCanceled">Get unspent input canceled. Please try again later.</string>
+    <string name="sendTransactionCanceled">Send transaction to network canceled. Please try again later.</string>
+
+    <string name="getAddressForPayInvoiceCanceled">Get address for payment canceled. Please try again later.</string>
+    <string name="payInvoiceCanceled">Pay invoice canceled. Please try again later.</string>
+
 </resources>
