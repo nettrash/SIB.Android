@@ -287,20 +287,11 @@
                     android:layout_marginLeft="10pt"
                     android:layout_marginRight="10pt"
                     android:layout_gravity="center"
-                    android:enabled="false"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2pt"
-                        android:textColor="@color/colorWhite"
-                        android:textSize="8pt"
-                        android:text="@string/sellInformation"/>
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="invisible">
+                        android:layout_height="wrap_content">
 
                         <EditText
                             android:id="@+id/sell_card_number"
@@ -316,7 +307,6 @@
                             android:paddingTop="1pt"
                             android:paddingBottom="1pt"
                             android:inputType="number"
-                            android:enabled="false"
                             android:hint="@string/hintCardNumber" />
 
                         <ImageButton
@@ -325,7 +315,6 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="end|center_vertical"
                             android:background="@null"
-                            android:enabled="false"
                             android:src="@drawable/camerawhite"/>
 
                     </FrameLayout>
@@ -342,8 +331,6 @@
                         android:paddingTop="1pt"
                         android:paddingBottom="1pt"
                         android:inputType="numberDecimal"
-                        android:enabled="false"
-                        android:visibility="invisible"
                         android:hint="@string/hintAmountSIB" />
                     <Button
                         android:id="@+id/sell_button"
@@ -357,8 +344,6 @@
                         android:textColor="@color/colorDark"
                         android:textAlignment="gravity"
                         android:gravity="center_vertical|center_horizontal"
-                        android:enabled="false"
-                        android:visibility="invisible"
                         android:text="@string/sell" />
                     <TextView
                         android:id="@+id/sell_rate"
@@ -368,7 +353,6 @@
                         android:textColor="@color/colorWhite"
                         android:textSize="5pt"
                         android:lines="5"
-                        android:visibility="invisible"
                         android:maxLines="5"/>
                 </LinearLayout>
 
