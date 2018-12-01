@@ -148,4 +148,6 @@
 
     <string name="getAddressForPayInvoiceCanceled">Не удалось получить адрес для перевода. Попробуйте позже.</string>
     <string name="payInvoiceCanceled">Оплата счёта отменена. Попытайтесь позже.</string>
+
+    <string name="willBeAvailableLater">Будет доступно позже.</string>
 </resources>

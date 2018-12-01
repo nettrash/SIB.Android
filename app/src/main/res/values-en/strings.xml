@@ -149,4 +149,6 @@
     <string name="getAddressForPayInvoiceCanceled">Get address for payment canceled. Please try again later.</string>
     <string name="payInvoiceCanceled">Pay invoice canceled. Please try again later.</string>
 
+    <string name="willBeAvailableLater">Will be available later.</string>
+
 </resources>
