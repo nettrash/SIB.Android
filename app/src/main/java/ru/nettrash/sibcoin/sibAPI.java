@@ -104,7 +104,7 @@ public final class sibAPI {
     }
 
     public sibAPI() {
-        urlAPIRoot = "https://service.biocoin.pro/wallet/sib/sib.svc";
+        urlAPIRoot = "https://srv-wl1.s2.team/wallet/sib.svc";//"https://service.biocoin.pro/wallet/sib/sib.svc";
         userAPI = "SIB";
         passwordAPI = "E0FB115E-80D8-4F4E-9701-E655AF9E84EB";
     }

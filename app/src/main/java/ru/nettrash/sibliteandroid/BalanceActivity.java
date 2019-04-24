@@ -62,6 +62,9 @@ public class BalanceActivity extends BaseActivity {
     private int _refreshLastOpsCount = 0;
     private int LAST_HISTORY_MAX_COUNT = 3;
 
+    private boolean _isRefreshBalance = false;
+    private boolean _isRefreshOps = false;
+
     private int _firstX;
     private int _firstY;
     private static final int SWIPE_MIN_X_DISTANCE = 100;
@@ -274,6 +277,7 @@ public class BalanceActivity extends BaseActivity {
                     if (data.size() < LAST_HISTORY_MAX_COUNT) {
                         refreshLastHistory(data);
                     } else {
+                        _isRefreshOps = false;
                         SimpleAdapter adapter = new SimpleAdapter(BalanceActivity.this, data, R.layout.last_history_item, sibHistoryItem.getListAdapterFrom(), sibHistoryItem.getListAdapterTo());
                         mLastHistoryListView.setAdapter(adapter);
                         mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
@@ -290,6 +294,7 @@ public class BalanceActivity extends BaseActivity {
             protected void onCancelled(ArrayList<sibMemPoolItem> result) {
                 super.onCancelled(result);
                 _refreshLastOpsCount--;
+                _isRefreshOps = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -300,6 +305,7 @@ public class BalanceActivity extends BaseActivity {
             protected void onCancelled() {
                 super.onCancelled();
                 _refreshLastOpsCount--;
+                _isRefreshOps = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -382,6 +388,7 @@ public class BalanceActivity extends BaseActivity {
                     mLabelNoOps.setVisibility(result.size() > 0 ? View.INVISIBLE : View.VISIBLE);
                 }
                 _refreshLastOpsCount--;
+                _isRefreshOps = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -392,6 +399,7 @@ public class BalanceActivity extends BaseActivity {
             protected void onCancelled(ArrayList<sibHistoryItem> result) {
                 super.onCancelled(result);
                 _refreshLastOpsCount--;
+                _isRefreshOps = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -402,6 +410,7 @@ public class BalanceActivity extends BaseActivity {
             protected void onCancelled() {
                 super.onCancelled();
                 _refreshLastOpsCount--;
+                _isRefreshOps = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -455,6 +464,7 @@ public class BalanceActivity extends BaseActivity {
                     sibApplication.model.setBalance(result);
                 }
                 _refreshLastOpsCount--;
+                _isRefreshBalance = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -466,6 +476,7 @@ public class BalanceActivity extends BaseActivity {
                 super.onCancelled(result);
                 mBalanceView.setText(R.string.balanceRefreshError);
                 _refreshLastOpsCount--;
+                _isRefreshBalance = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -477,6 +488,7 @@ public class BalanceActivity extends BaseActivity {
                 super.onCancelled();
                 mBalanceView.setText(R.string.balanceRefreshError);
                 _refreshLastOpsCount--;
+                _isRefreshBalance = false;
                 if (_refreshLastOpsCount<=0) {
                     _refreshLastOpsCount = 0;
                     mSwipeRefreshLastOps.setRefreshing(false);
@@ -1152,8 +1164,14 @@ public class BalanceActivity extends BaseActivity {
     }
 
     private void doRefresh() {
-        refreshBalance();
-        refreshMemPool();
+        if (!_isRefreshBalance) {
+            _isRefreshBalance = true;
+            refreshBalance();
+        }
+        if (!_isRefreshOps) {
+            _isRefreshOps = true;
+            refreshMemPool();
+        }
     }
 
     private void actionAnimation() {
